@@ -1,0 +1,15 @@
+{
+  "name": "logbook-api",
+  "version": "1.0.0",
+  "description": "REST API for reading and editing the pilot flight logbook database.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
