@@ -20,6 +20,9 @@ history is a real backup/rollback mechanism and is never rewritten, and the
 data repo is private forever while this app repo has no sensitive content
 of its own.
 
+This repo (`logbookui`) is public and hosted on GitHub Pages, since it's
+just the generic app code with no personal data in it.
+
 For local development, a working copy of `logbook.db` (and, if you
 regenerate it, `schema.sql`) still needs to sit at the root of this repo —
 copy it from `logbook-data` — but it's gitignored here, not tracked.
