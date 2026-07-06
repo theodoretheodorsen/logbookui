@@ -1,10 +1,15 @@
 import { loadDatabase, getDb, withTransaction } from './db.js';
-import { listAircraft } from './lib/aircraft.js';
-import { addFlight, updateFlight, getFlight } from './lib/flights.js';
-import { addSimulatorSession } from './lib/simulator.js';
-import { addRemark } from './lib/remarks.js';
-import { deleteEntryAt } from './lib/entries.js';
-import { getPage, getLastPageNumber } from './lib/pages.js';
+import { listAircraft } from '/lib/aircraft.js';
+import { createFlightsApi } from '/lib/flights.js';
+import { createSimulatorApi } from '/lib/simulator.js';
+import { createRemarksApi } from '/lib/remarks.js';
+import { deleteEntryAt } from '/lib/entries.js';
+import { createPagesApi } from '/lib/pages.js';
+
+const { addFlight, updateFlight, getFlight } = createFlightsApi({ getDb, withTransaction });
+const { addSimulatorSession } = createSimulatorApi({ withTransaction });
+const { addRemark } = createRemarksApi({ withTransaction });
+const { getPage, getLastPageNumber } = createPagesApi({ getDb });
 
 let currentPage = 1;
 

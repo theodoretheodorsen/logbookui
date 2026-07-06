@@ -43,6 +43,25 @@ foreign keys by default. Any connection that writes to this database should
 run `PRAGMA foreign_keys = ON;` first if it wants invalid references
 rejected.
 
+## Shared business logic (`lib/`)
+
+`lib/*.js` — find-or-create aircraft, position renumbering, and CRUD per
+entry type — is the one copy of the logbook's business logic, used by both
+`api/` and `web/` below (and any future consumer, e.g. a CLI). It doesn't
+know which SQLite driver it's running on: `aircraft.js`/`entries.js` take a
+`db` handle as an explicit function argument, and `flights.js`/`simulator.js`/
+`remarks.js`/`pages.js` export a factory (`createFlightsApi({ getDb,
+withTransaction })`, etc.) that each environment calls with its own
+`{ getDb, withTransaction }` — supplied by that environment's own `db.js`
+(`api/db.js` wraps `node:sqlite`; `web/js/db.js` wraps `sql.js`/WASM, since
+the browser can't use `node:sqlite`).
+
+**Position handling**: `logbook_entries.position` must stay contiguous
+(page/line are computed from it), so inserts and deletes both renumber
+everything after them in a transaction — insert accepts an optional
+`position` (default: append at the end) and shifts later entries up by one;
+delete always shifts later entries down by one to close the gap.
+
 ## API
 
 `api/` is a small Node.js REST API for reading and editing the logbook
@@ -55,17 +74,8 @@ npm install
 npm start          # listens on http://localhost:3000
 ```
 
-It's structured as a library (`api/lib/*.js` — the actual business logic:
-find-or-create aircraft, position renumbering, CRUD per entry type) with a
-thin Express layer (`api/server.js`) on top, so a CLI could reuse the same
-library later without duplicating logic. Uses Node's built-in `node:sqlite`
-(no native build step required).
-
-**Position handling**: `logbook_entries.position` must stay contiguous
-(page/line are computed from it), so inserts and deletes both renumber
-everything after them in a transaction — insert accepts an optional
-`position` (default: append at the end) and shifts later entries up by one;
-delete always shifts later entries down by one to close the gap.
+It's a thin Express layer (`api/server.js`) over the shared `lib/` above,
+using Node's built-in `node:sqlite` (no native build step required).
 
 | Method | Path                  | Purpose |
 |--------|-----------------------|---------|
@@ -79,5 +89,22 @@ delete always shifts later entries down by one to close the gap.
 | POST   | `/remarks`            | Add a remark/blank line |
 | DELETE | `/entries/:position`  | Delete any entry type at that position, renumbering |
 
-Errors: invalid enum/reference values → 400, unknown position → 404,
-aircraft registration conflict → 409.
+Errors: invalid enum/reference/missing-required-field values → 400, unknown
+position → 404.
+
+## Web UI
+
+`web/` is a static, serverless page (no backend, no bundler) that runs
+SQLite entirely in the browser via `sql.js` (WASM), for editing the logbook
+without installing anything. It imports the same `lib/` as the API.
+
+```
+node web/serve.js   # listens on http://localhost:8080 (needed because
+                     # sql.js's .wasm fetch requires http://, not file://)
+```
+
+Open the page, pick `logbook.db` from disk, and edit freely — under 700px
+width the page/line table collapses into tap-to-expand cards for one-handed
+phone use. **Nothing is saved back to disk yet**: everything happens in
+browser memory and is lost on refresh. Persistence (and committing changes
+back to GitHub) is intentionally not built yet.

@@ -1,12 +1,17 @@
-const express = require('express');
-const { db, withTransaction } = require('./db');
-const { getPage, getLastPageNumber } = require('./lib/pages');
-const { listAircraft } = require('./lib/aircraft');
-const { addFlight, updateFlight, getFlight } = require('./lib/flights');
-const { addSimulatorSession } = require('./lib/simulator');
-const { addRemark } = require('./lib/remarks');
-const { deleteEntryAt } = require('./lib/entries');
-const { isConstraintError } = require('./lib/errors');
+import express from 'express';
+import { db, getDb, withTransaction } from './db.js';
+import { createPagesApi } from '../lib/pages.js';
+import { listAircraft } from '../lib/aircraft.js';
+import { createFlightsApi } from '../lib/flights.js';
+import { createSimulatorApi } from '../lib/simulator.js';
+import { createRemarksApi } from '../lib/remarks.js';
+import { deleteEntryAt } from '../lib/entries.js';
+import { isConstraintError } from '../lib/errors.js';
+
+const { getPage, getLastPageNumber } = createPagesApi({ getDb });
+const { addFlight, updateFlight, getFlight } = createFlightsApi({ getDb, withTransaction });
+const { addSimulatorSession } = createSimulatorApi({ withTransaction });
+const { addRemark } = createRemarksApi({ withTransaction });
 
 const app = express();
 app.use(express.json());

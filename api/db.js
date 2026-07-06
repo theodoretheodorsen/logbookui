@@ -1,10 +1,16 @@
-const path = require('node:path');
-const { DatabaseSync } = require('node:sqlite');
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.join(__dirname, '..', 'logbook.db');
 
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA foreign_keys = ON;');
+
+function getDb() {
+  return db;
+}
 
 // Runs `fn(db)` inside a BEGIN/COMMIT, rolling back on any thrown error.
 // node:sqlite's DatabaseSync has no built-in transaction() helper (unlike
@@ -21,4 +27,4 @@ function withTransaction(fn) {
   }
 }
 
-module.exports = { db, withTransaction };
+export { db, getDb, withTransaction };

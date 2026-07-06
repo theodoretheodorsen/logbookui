@@ -5,7 +5,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PORT = process.env.PORT || 8080;
-const ROOT = __dirname;
+const WEB_ROOT = __dirname;
+// The business-logic lib/ lives at the project root, shared with api/ - see
+// README.md. Requests under /lib/ are served from there instead of WEB_ROOT.
+const LIB_ROOT = path.join(__dirname, '..', 'lib');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -16,10 +19,13 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  const requestPath = req.url === '/' ? '/index.html' : req.url;
-  const filePath = path.join(ROOT, decodeURIComponent(requestPath.split('?')[0]));
+  const requestPath = req.url === '/' ? '/index.html' : decodeURIComponent(req.url.split('?')[0]);
+  const isLib = requestPath === '/lib' || requestPath.startsWith('/lib/');
+  const root = isLib ? LIB_ROOT : WEB_ROOT;
+  const relativePath = isLib ? requestPath.slice('/lib'.length) : requestPath;
+  const filePath = path.join(root, relativePath);
 
-  if (!filePath.startsWith(ROOT)) {
+  if (!filePath.startsWith(root)) {
     res.writeHead(403);
     res.end('Forbidden');
     return;
