@@ -1,3 +1,9 @@
 .claude/settings.local.json
 api/node_modules/
 web/node_modules/
+
+# The actual data now lives in a separate repo (github.com/theodoretheodorsen/logbook-data)
+# - kept locally here too so the app/tests have something to run against,
+# but it's no longer tracked in this repo. See README.md.
+logbook.db
+schema.sql

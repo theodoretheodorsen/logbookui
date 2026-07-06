@@ -1,6 +1,6 @@
-# Pilot Flight Logbook Database
+# Pilot Flight Logbook
 
-This database is a digital mirror of a physical/paper pilot flight logbook
+This app is a digital mirror of a physical/paper pilot flight logbook
 (EASA-style). A paper logbook is a bound book where every flight, simulator
 session, or handwritten note is logged as one line, ten lines to a page.
 At the bottom of each page the pilot writes three summary rows: the totals
@@ -10,20 +10,35 @@ querying "page N" returns the same ten lines and the same three summary
 rows a pilot would see on the physical page — see the `logbook_page_report`
 view.
 
+## Data lives in a separate repo
+
+`logbook.db` and `schema.sql` are **not** in this repo — they live in
+[`logbook-data`](https://github.com/theodoretheodorsen/logbook-data), on
+purpose: every save is a commit (data entry, not software development, so
+mixing the two would bury each repo's history in the other's noise), that
+history is a real backup/rollback mechanism and is never rewritten, and the
+data repo is private forever while this app repo has no sensitive content
+of its own.
+
+For local development, a working copy of `logbook.db` (and, if you
+regenerate it, `schema.sql`) still needs to sit at the root of this repo —
+copy it from `logbook-data` — but it's gitignored here, not tracked.
+
 ## Files
 
-- **`logbook.db`** — the SQLite database. This is the source of truth for
-  both structure and data.
-- **`schema.sql`** — a generated, read-only export of `logbook.db`'s schema
-  (tables + views), for browsing and diffing in git. Regenerate it after any
-  structural change with:
+- **`logbook.db`** (gitignored, local working copy only — see above) — the
+  SQLite database, source of truth for both structure and data.
+- **`schema.sql`** (gitignored, local working copy only) — a generated,
+  read-only export of `logbook.db`'s schema (tables + views). Regenerate it
+  after any structural change with:
   ```
   sqlite3 logbook.db ".schema" > schema.sql
   ```
   Never hand-edit `schema.sql` — every table/column/view comment lives
   inside the actual `CREATE` statements in `logbook.db` itself, so the
   export always reflects the true, current structure and can never drift
-  out of sync.
+  out of sync. Copy both files over to `logbook-data` and commit them there
+  when you want the change to persist.
 
 ## Reading the logbook
 
@@ -110,5 +125,7 @@ node web/serve.js   # listens on http://localhost:8080 (needed because
 Open the page, pick `logbook.db` from disk, and edit freely — under 700px
 width the page/line table collapses into tap-to-expand cards for one-handed
 phone use. **Nothing is saved back to disk yet**: everything happens in
-browser memory and is lost on refresh. Persistence (and committing changes
-back to GitHub) is intentionally not built yet.
+browser memory and is lost on refresh. The plan is for it to load/save
+straight from/to the `logbook-data` repo via the GitHub API instead of a
+local file picker, so every save becomes a commit there; that isn't built
+yet.
