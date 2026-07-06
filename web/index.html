@@ -7,8 +7,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Flight Logbook</h1>
-
 <section id="open-panel">
   <label>Open logbook.db: <input type="file" id="file-input" accept=".db"></label>
   <p class="hint">Nothing is saved back to disk in this version — edits only live in this browser
@@ -16,33 +14,39 @@
 </section>
 
 <section id="app" hidden>
-  <div id="filename"></div>
-
   <div id="error-box" class="error" hidden></div>
 
   <nav id="page-nav">
-    <button type="button" id="btn-first" title="First page">&laquo; First</button>
-    <button type="button" id="btn-prev" title="Previous page">&lsaquo; Prev</button>
+    <button type="button" id="btn-first" class="icon-btn" title="First page" aria-label="First page">&laquo;</button>
+    <button type="button" id="btn-prev" class="icon-btn" title="Previous page" aria-label="Previous page">&lsaquo;</button>
     <span class="page-jump">
-      Page <input type="number" id="page-input" min="1" size="4">
-      of <span id="last-page">-</span>
-      <button type="button" id="btn-go">Go</button>
+      <input type="number" id="page-input" min="1" size="3" title="Go to page" aria-label="Go to page">
+      <span class="page-sep">/</span>
+      <span id="last-page">-</span>
     </span>
-    <button type="button" id="btn-next" title="Next page">Next &rsaquo;</button>
-    <button type="button" id="btn-last" title="Last page">Last &raquo;</button>
+    <button type="button" id="btn-next" class="icon-btn" title="Next page" aria-label="Next page">&rsaquo;</button>
+    <button type="button" id="btn-last" class="icon-btn" title="Last page" aria-label="Last page">&raquo;</button>
+    <button type="button" id="btn-toggle-toolbar" class="icon-btn plus-btn" title="Add..." aria-label="Show add actions">+</button>
   </nav>
 
-  <div id="toolbar">
-    <button type="button" id="btn-add-flight">+ Add Flight</button>
-    <button type="button" id="btn-add-sim">+ Add Simulator Session</button>
-    <button type="button" id="btn-add-remark">+ Add Remark</button>
+  <div id="toolbar" hidden>
+    <button type="button" id="btn-add-flight" class="icon-btn" title="Add Flight" aria-label="Add Flight">&#9992;&#65039;</button>
+    <button type="button" id="btn-add-sim" class="icon-btn" title="Add Simulator Session" aria-label="Add Simulator Session">&#128421;&#65039;</button>
+    <button type="button" id="btn-add-remark" class="icon-btn" title="Add Remark" aria-label="Add Remark">&#128221;</button>
+    <span class="edit-mode-control">
+      <span class="tool-icon" aria-hidden="true" title="Allow editing and deleting">&#128295;</span>
+      <label class="switch">
+        <input type="checkbox" id="edit-mode-toggle" aria-label="Allow editing and deleting entries">
+        <span class="slider"></span>
+      </label>
+    </span>
   </div>
 
   <div id="page-table-wrap">
     <table id="page-table">
       <thead>
         <tr>
-          <th>#</th>
+          <th></th>
           <th>Date</th>
           <th>From</th>
           <th>Off</th>
@@ -64,7 +68,7 @@
           <th>Sim Type</th>
           <th>Sim</th>
           <th>Remarks</th>
-          <th>Actions</th>
+          <th class="actions-cell">Actions</th>
         </tr>
       </thead>
       <tbody id="page-table-body"></tbody>
@@ -82,19 +86,21 @@
       <input type="number" id="flight-position" min="1">
     </label>
 
-    <label>Off-block (UTC)
-      <input type="datetime-local" id="flight-off-block" required>
-    </label>
-    <label>On-block (UTC)
-      <input type="datetime-local" id="flight-on-block" required>
+    <label>Date
+      <input type="date" id="flight-date" required>
     </label>
 
-    <label>Departure (ICAO)
-      <input type="text" id="flight-departure" required>
-    </label>
-    <label>Destination (ICAO)
-      <input type="text" id="flight-destination" required>
-    </label>
+    <div class="field-row">
+      <span class="row-icon" aria-hidden="true" title="Departure">&#128747;</span>
+      <input type="text" id="flight-off-block-time" class="time-input" placeholder="HHMM" aria-label="Off-block time (24h, UTC)" inputmode="numeric" maxlength="4" pattern="([01][0-9]|2[0-3])[0-5][0-9]" required>
+      <input type="text" id="flight-departure" class="icao-input" placeholder="ICAO" aria-label="Departure ICAO" maxlength="4" required>
+    </div>
+
+    <div class="field-row">
+      <span class="row-icon" aria-hidden="true" title="Arrival">&#128748;</span>
+      <input type="text" id="flight-on-block-time" class="time-input" placeholder="HHMM" aria-label="On-block time (24h, UTC)" inputmode="numeric" maxlength="4" pattern="([01][0-9]|2[0-3])[0-5][0-9]" required>
+      <input type="text" id="flight-destination" class="icao-input" placeholder="ICAO" aria-label="Destination ICAO" maxlength="4" required>
+    </div>
 
     <label>Aircraft
       <select id="flight-aircraft-select"></select>
@@ -126,27 +132,25 @@
       <input type="text" id="flight-pic-name">
     </label>
 
-    <label>Role
-      <select id="flight-role" required>
-        <option value="PIC">PIC</option>
-        <option value="SIC">SIC</option>
-        <option value="DUAL">DUAL</option>
-      </select>
-    </label>
-
-    <label>Flight rules
-      <select id="flight-rules" required>
-        <option value="VFR">VFR</option>
-        <option value="IFR">IFR</option>
-      </select>
-    </label>
-
-    <label>Day landings
-      <input type="number" id="flight-day-landings" min="0">
-    </label>
-    <label>Night landings
-      <input type="number" id="flight-night-landings" min="0">
-    </label>
+    <div class="field-row">
+      <label>Role
+        <select id="flight-role" required>
+          <option value="PIC">PIC</option>
+          <option value="SIC" selected>SIC</option>
+          <option value="DUAL">DUAL</option>
+        </select>
+      </label>
+      <label>Flight rules
+        <select id="flight-rules" required>
+          <option value="VFR">VFR</option>
+          <option value="IFR" selected>IFR</option>
+        </select>
+      </label>
+      <span class="row-icon" aria-hidden="true" title="Day landings">&#9728;&#65039;</span>
+      <input type="number" id="flight-day-landings" class="landings-input" min="0" value="0" aria-label="Day landings">
+      <span class="row-icon" aria-hidden="true" title="Night landings">&#127769;</span>
+      <input type="number" id="flight-night-landings" class="landings-input" min="0" value="0" aria-label="Night landings">
+    </div>
 
     <label>Remarks
       <input type="text" id="flight-remarks">
@@ -161,7 +165,7 @@
 
 <dialog id="sim-dialog">
   <form id="sim-form">
-    <h2>Add Simulator Session</h2>
+    <h2 id="sim-dialog-title">Add Simulator Session</h2>
 
     <label>Position (optional, default: append)
       <input type="number" id="sim-position" min="1">
@@ -171,10 +175,11 @@
       <input type="date" id="sim-session-date" required>
     </label>
     <label>FSTD type
-      <input type="text" id="sim-fstd-type" required>
+      <input type="text" id="sim-fstd-type" list="sim-fstd-type-list" required>
+      <datalist id="sim-fstd-type-list"></datalist>
     </label>
-    <label>Duration (minutes)
-      <input type="number" id="sim-duration" min="1" required>
+    <label>Duration
+      <input type="text" id="sim-duration" placeholder="HHMM" inputmode="numeric" maxlength="4" pattern="[0-9]{2}[0-5][0-9]" required>
     </label>
     <label>Remarks
       <input type="text" id="sim-remarks">
@@ -189,7 +194,7 @@
 
 <dialog id="remark-dialog">
   <form id="remark-form">
-    <h2>Add Remark</h2>
+    <h2 id="remark-dialog-title">Add Remark</h2>
 
     <label>Position (optional, default: append)
       <input type="number" id="remark-position" min="1">

@@ -5,18 +5,25 @@
 import { loadDatabase, getDb, withTransaction } from './db.js';
 import { listAircraft as listAircraftRaw } from '/lib/aircraft.js';
 import { createFlightsApi } from '/lib/flights.js';
-import { createSimulatorApi } from '/lib/simulator.js';
+import { createSimulatorApi, listFstdTypes as listFstdTypesRaw } from '/lib/simulator.js';
 import { createRemarksApi } from '/lib/remarks.js';
 import { deleteEntryAt } from '/lib/entries.js';
 import { createPagesApi } from '/lib/pages.js';
 
-const { addFlight, updateFlight, getFlight } = createFlightsApi({ getDb, withTransaction });
-const { addSimulatorSession } = createSimulatorApi({ withTransaction });
-const { addRemark } = createRemarksApi({ withTransaction });
+const { addFlight, updateFlight, getFlight, getLastFlight } = createFlightsApi({ getDb, withTransaction });
+const { addSimulatorSession, updateSimulatorSession, getSimulatorSession } = createSimulatorApi({
+  getDb,
+  withTransaction,
+});
+const { addRemark, updateRemark, getRemark } = createRemarksApi({ getDb, withTransaction });
 const { getPage, getLastPageNumber } = createPagesApi({ getDb });
 
 function listAircraft() {
   return listAircraftRaw(getDb());
+}
+
+function listFstdTypes() {
+  return listFstdTypesRaw(getDb());
 }
 
 function deleteEntry(position) {
@@ -29,10 +36,16 @@ export const logbookApi = {
   addFlight,
   updateFlight,
   getFlight,
+  getLastFlight,
   addSimulatorSession,
+  updateSimulatorSession,
+  getSimulatorSession,
   addRemark,
+  updateRemark,
+  getRemark,
   getPage,
   getLastPageNumber,
   listAircraft,
+  listFstdTypes,
   deleteEntry,
 };

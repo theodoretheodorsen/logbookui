@@ -4,10 +4,6 @@ body {
   color: #1a1a1a;
 }
 
-h1 {
-  font-size: 1.4rem;
-}
-
 .hint {
   color: #666;
   font-size: 0.85rem;
@@ -22,13 +18,9 @@ h1 {
   margin: 0.5rem 0;
 }
 
-#filename {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
 #page-nav {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
@@ -36,18 +28,134 @@ h1 {
 
 .page-jump {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .page-jump input {
-  width: 4.5rem;
+  width: 3rem;
+  text-align: center;
+  border: none;
+  border-bottom: 1px solid #999;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+
+.page-jump input:focus {
+  outline: none;
+  border-bottom-color: currentColor;
+}
+
+.page-sep {
+  color: #888;
 }
 
 #toolbar {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+/* [hidden]'s default display:none has low specificity - the #toolbar rule
+   above would otherwise win and show it anyway (same gotcha as
+   .card-details[hidden] and dialog form label[hidden]). */
+#toolbar[hidden] {
+  display: none;
+}
+
+/* Icon-only buttons (page nav arrows, toolbar actions) - bigger glyph and
+   a roughly-square tap target rather than a text button's padding. */
+.icon-btn {
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.35rem 0.6rem;
+}
+
+/* Rotates the toolbar's "+" toggle into a "x" while the toolbar is open -
+   same rotate-on-expand language as the card chevrons. */
+.plus-btn {
+  transition: transform 0.15s ease;
+}
+
+.plus-btn.expanded {
+  transform: rotate(45deg);
+}
+
+/* Edit-mode toggle (wrench icon + sliding switch), inside the hidden
+   toolbar - gates Edit/Delete and the Add-dialogs' Position field behind an
+   explicit opt-in, since both can restructure/renumber the whole logbook. */
+.edit-mode-control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid #ccc;
+}
+
+.tool-icon {
+  font-size: 1.1rem;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 2.4rem;
+  height: 1.4rem;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  inset: 0;
+  background: #bbb;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.switch .slider::before {
+  content: '';
+  position: absolute;
+  height: 1.05rem;
+  width: 1.05rem;
+  left: 0.175rem;
+  bottom: 0.175rem;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.switch input:checked + .slider {
+  background: #2e7d32;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(1rem);
+}
+
+/* Edit/delete actions are hidden until the switch above is turned on. */
+.actions-cell,
+.card-actions {
+  display: none;
+}
+
+#app.editing-enabled .actions-cell {
+  display: table-cell;
+}
+
+#app.editing-enabled .card-actions {
+  display: flex;
 }
 
 #page-table-wrap {
@@ -109,10 +217,9 @@ tr.totals-row {
   cursor: pointer;
 }
 
-.summary-tag {
-  font-size: 0.75rem;
-  color: #666;
-  min-width: 2.5em;
+.summary-plain {
+  flex: 1;
+  min-width: 0;
 }
 
 .summary-text {
@@ -160,9 +267,10 @@ tr.totals-row {
   color: #666;
 }
 
+/* display is set conditionally above (hidden unless #app.editing-enabled) -
+   this only carries the layout properties for when it IS shown. */
 .card-actions {
   grid-column: 1 / -1;
-  display: flex;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
@@ -196,6 +304,54 @@ dialog fieldset {
   margin-bottom: 0.6rem;
 }
 
+/* Groups several fields onto one line (e.g. off-block time + departure) -
+   used inside the Add/Edit Flight dialog. */
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.field-row > label {
+  margin-bottom: 0;
+}
+
+.field-row input,
+.field-row select {
+  width: auto;
+  margin-top: 0;
+}
+
+.field-row select {
+  min-width: 5.5em;
+}
+
+.row-icon {
+  font-size: 1.2rem;
+  flex: 0 0 auto;
+}
+
+/* Qualified with .field-row so these beat the ".field-row input{width:auto}"
+   rule above on specificity (both are otherwise 1-class-1-type vs 1-class,
+   a tie broken the wrong way) instead of silently falling back to the
+   browser's ~177px default text-input width. */
+.field-row .time-input {
+  width: 3.2em;
+  text-align: center;
+}
+
+.field-row .icao-input {
+  width: 3.6em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.field-row .landings-input {
+  width: 3em;
+}
+
 dialog menu {
   display: flex;
   justify-content: flex-end;
@@ -220,10 +376,6 @@ dialog menu {
   #page-nav,
   #toolbar {
     flex-wrap: wrap;
-  }
-
-  #toolbar button {
-    flex: 1 1 auto;
   }
 
   dialog {
@@ -259,11 +411,27 @@ dialog menu {
   .card-details {
     border-color: #444;
   }
-  .summary-tag,
   .summary-sub,
   .card-field-label {
     color: #aaa;
   }
+
+  .page-sep {
+    color: #777;
+  }
+
+  .page-jump input {
+    border-bottom-color: #666;
+  }
+
+  .edit-mode-control {
+    border-left-color: #555;
+  }
+
+  .switch .slider {
+    background: #555;
+  }
+
   dialog {
     background: #2a2a2a;
     color: #ddd;

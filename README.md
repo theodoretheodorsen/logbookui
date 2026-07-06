@@ -85,8 +85,12 @@ using Node's built-in `node:sqlite` (no native build step required).
 | GET    | `/flights/:position`  | Raw fields for one flight (editing/inspection) |
 | POST   | `/flights`            | Add a flight (`aircraft_id` or `aircraft: {registration,type,pilot_operation,engine_configuration}`; optional `position`) |
 | PUT    | `/flights/:position`  | Edit a flight's fields (position never changes) |
+| GET    | `/simulator-sessions/:position` | Raw fields for one simulator session |
 | POST   | `/simulator-sessions` | Add a simulator session |
+| PUT    | `/simulator-sessions/:position` | Edit a simulator session's fields (position never changes) |
+| GET    | `/remarks/:position`  | Raw fields for one remark |
 | POST   | `/remarks`            | Add a remark/blank line |
+| PUT    | `/remarks/:position`  | Edit a remark's text (position never changes) |
 | DELETE | `/entries/:position`  | Delete any entry type at that position, renumbering |
 
 Errors: invalid enum/reference/missing-required-field values → 400, unknown

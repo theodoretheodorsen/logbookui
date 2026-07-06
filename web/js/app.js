@@ -8,9 +8,10 @@ import { createRemarkDialog } from './dialogs/remark-dialog.js';
 
 const openPanel = el('open-panel');
 const app = el('app');
-const filenameEl = el('filename');
 const pageInput = el('page-input');
 const lastPageEl = el('last-page');
+const toolbar = el('toolbar');
+const toggleToolbarBtn = el('btn-toggle-toolbar');
 
 let currentPage = 1;
 
@@ -44,10 +45,16 @@ function onDelete(position) {
   }
 }
 
+function onEdit(position, kind) {
+  if (kind === 'flight') flightDialog.open(position);
+  else if (kind === 'simulator') simDialog.open(position);
+  else remarkDialog.open(position);
+}
+
 const pageView = createPageView({
   tableBody: el('page-table-body'),
   cardList: el('page-card-list'),
-  onEditFlight: (position) => flightDialog.open(position),
+  onEdit,
   onDeleteEntry: onDelete,
 });
 
@@ -60,10 +67,22 @@ el('btn-first').addEventListener('click', () => goToPage(1));
 el('btn-prev').addEventListener('click', () => goToPage(currentPage - 1));
 el('btn-next').addEventListener('click', () => goToPage(currentPage + 1));
 el('btn-last').addEventListener('click', () => goToPage(logbookApi.getLastPageNumber()));
-el('btn-go').addEventListener('click', () => goToPage(Number(pageInput.value)));
+pageInput.addEventListener('change', () => goToPage(Number(pageInput.value)));
+pageInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') goToPage(Number(pageInput.value));
+});
 el('btn-add-flight').addEventListener('click', () => flightDialog.open());
 el('btn-add-sim').addEventListener('click', () => simDialog.open());
 el('btn-add-remark').addEventListener('click', () => remarkDialog.open());
+
+toggleToolbarBtn.addEventListener('click', () => {
+  toolbar.hidden = !toolbar.hidden;
+  toggleToolbarBtn.classList.toggle('expanded', !toolbar.hidden);
+});
+
+el('edit-mode-toggle').addEventListener('change', (event) => {
+  app.classList.toggle('editing-enabled', event.target.checked);
+});
 
 async function onFileChosen(event) {
   const file = event.target.files[0];
@@ -71,10 +90,9 @@ async function onFileChosen(event) {
   try {
     const buffer = await file.arrayBuffer();
     await loadDatabase(buffer);
-    filenameEl.textContent = file.name;
     openPanel.hidden = true;
     app.hidden = false;
-    goToPage(1);
+    goToPage(logbookApi.getLastPageNumber());
   } catch (err) {
     showError(`Could not open ${file.name}: ${err.message}`);
   }

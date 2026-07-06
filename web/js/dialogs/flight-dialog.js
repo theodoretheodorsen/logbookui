@@ -1,16 +1,24 @@
 import { el } from '../dom.js';
 import { logbookApi } from '../logbook-api.js';
 import { showError, clearError } from '../error-banner.js';
+import { isEditModeEnabled } from '../edit-mode.js';
+import { HOME_BASE } from '../config.js';
+import { restrictDigits, restrictUppercase } from '../input-restrict.js';
+import { todayUtc, addDaysUtc } from '../date-utils.js';
 
 const NEW_AIRCRAFT_VALUE = '__new__';
 
-// datetime-local gives "YYYY-MM-DDTHH:MM"; the db stores full UTC timestamps
-// as plain "YYYY-MM-DD HH:MM:SS" text (see schema.sql).
-function toDbTimestamp(datetimeLocalValue) {
-  return `${datetimeLocalValue.replace('T', ' ')}:00`;
+// The date and 24h time fields are kept as separate plain inputs rather than
+// one <input type="datetime-local"> - that control's time portion renders in
+// whatever 12h/24h format the OS locale prefers, which isn't overridable,
+// whereas a plain "HHMM" text field with a strict pattern always is 24h.
+function toDbTimestamp(dateValue, hhmm) {
+  return `${dateValue} ${hhmm.slice(0, 2)}:${hhmm.slice(2, 4)}:00`;
 }
-function toDatetimeLocalValue(dbTimestamp) {
-  return dbTimestamp ? dbTimestamp.slice(0, 16).replace(' ', 'T') : '';
+function splitDbTimestamp(dbTimestamp) {
+  if (!dbTimestamp) return { date: '', time: '' };
+  const [date, time] = dbTimestamp.split(' ');
+  return { date, time: time ? time.slice(0, 5).replace(':', '') : '' };
 }
 
 // `onSaved(position)` is called after a successful add or edit, with the
@@ -27,6 +35,11 @@ export function createFlightDialog({ onSaved }) {
     newAircraftFields.hidden = aircraftSelect.value !== NEW_AIRCRAFT_VALUE;
   });
   el('flight-cancel').addEventListener('click', () => dialog.close());
+
+  restrictDigits(el('flight-off-block-time'), 4);
+  restrictDigits(el('flight-on-block-time'), 4);
+  restrictUppercase(el('flight-departure'), 4);
+  restrictUppercase(el('flight-destination'), 4);
 
   function populateAircraftSelect() {
     aircraftSelect.textContent = '';
@@ -49,13 +62,23 @@ export function createFlightDialog({ onSaved }) {
     newAircraftFields.hidden = true;
     editingPosition = position ?? null;
     el('flight-dialog-title').textContent = editingPosition ? 'Edit Flight' : 'Add Flight';
-    el('flight-position').closest('label').hidden = Boolean(editingPosition);
+    // The position override is a structural, renumbering operation - same as
+    // Edit/Delete, so it's also gated behind the edit-mode toggle.
+    el('flight-position').closest('label').hidden = Boolean(editingPosition) || !isEditModeEnabled();
 
     if (editingPosition) {
       const flight = logbookApi.getFlight(editingPosition);
       el('flight-position').value = '';
-      el('flight-off-block').value = toDatetimeLocalValue(flight.off_block);
-      el('flight-on-block').value = toDatetimeLocalValue(flight.on_block);
+      // Only off_block's date is shown/edited (the logbook only ever
+      // displays one Date per entry - see logbook_page_report) - on_block
+      // is assumed to be the same calendar day. Re-saving a flight that
+      // genuinely crossed midnight UTC would normalize its on_block date to
+      // match; edit such a flight via the API/sqlite3 directly instead.
+      const off = splitDbTimestamp(flight.off_block);
+      const on = splitDbTimestamp(flight.on_block);
+      el('flight-date').value = off.date;
+      el('flight-off-block-time').value = off.time;
+      el('flight-on-block-time').value = on.time;
       el('flight-departure').value = flight.departure ?? '';
       el('flight-destination').value = flight.destination ?? '';
       aircraftSelect.value = String(flight.aircraft_id);
@@ -67,6 +90,34 @@ export function createFlightDialog({ onSaved }) {
       el('flight-remarks').value = flight.remarks ?? '';
     } else {
       form.reset();
+      const today = todayUtc();
+      el('flight-date').value = today;
+
+      const lastFlight = logbookApi.getLastFlight();
+      if (lastFlight) {
+        const endedAwayFromHome = lastFlight.destination !== HOME_BASE;
+        if (endedAwayFromHome) {
+          el('flight-departure').value = lastFlight.destination ?? '';
+          el('flight-destination').value = HOME_BASE;
+        } else {
+          el('flight-departure').value = HOME_BASE;
+          el('flight-destination').value = '';
+        }
+        aircraftSelect.value = String(lastFlight.aircraft_id);
+
+        // Same PIC is likely if this is a continuation: either still the same
+        // day, or the next day picking up from where the last flight left off
+        // (away from home base) - but not after a longer gap, and not for a
+        // fresh day starting back at home base.
+        const lastDate = splitDbTimestamp(lastFlight.off_block).date;
+        const sameDay = today === lastDate;
+        const nextDayAwayFromHome = endedAwayFromHome && today === addDaysUtc(lastDate, 1);
+        if (sameDay || nextDayAwayFromHome) {
+          el('flight-pic-name').value = lastFlight.pic_name ?? '';
+        }
+      } else {
+        el('flight-departure').value = HOME_BASE;
+      }
     }
 
     dialog.showModal();
@@ -76,9 +127,10 @@ export function createFlightDialog({ onSaved }) {
     event.preventDefault();
     clearError();
 
+    const date = el('flight-date').value;
     const data = {
-      off_block: toDbTimestamp(el('flight-off-block').value),
-      on_block: toDbTimestamp(el('flight-on-block').value),
+      off_block: toDbTimestamp(date, el('flight-off-block-time').value),
+      on_block: toDbTimestamp(date, el('flight-on-block-time').value),
       departure: el('flight-departure').value,
       destination: el('flight-destination').value,
       pic_name: el('flight-pic-name').value || null,

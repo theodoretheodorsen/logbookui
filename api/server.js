@@ -10,8 +10,11 @@ import { isConstraintError } from '../lib/errors.js';
 
 const { getPage, getLastPageNumber } = createPagesApi({ getDb });
 const { addFlight, updateFlight, getFlight } = createFlightsApi({ getDb, withTransaction });
-const { addSimulatorSession } = createSimulatorApi({ withTransaction });
-const { addRemark } = createRemarksApi({ withTransaction });
+const { addSimulatorSession, updateSimulatorSession, getSimulatorSession } = createSimulatorApi({
+  getDb,
+  withTransaction,
+});
+const { addRemark, updateRemark, getRemark } = createRemarksApi({ getDb, withTransaction });
 
 const app = express();
 app.use(express.json());
@@ -71,6 +74,13 @@ app.put(
   })
 );
 
+app.get(
+  '/simulator-sessions/:position',
+  asyncHandler((req, res) => {
+    res.json(getSimulatorSession(Number(req.params.position)));
+  })
+);
+
 app.post(
   '/simulator-sessions',
   asyncHandler((req, res) => {
@@ -79,11 +89,34 @@ app.post(
   })
 );
 
+app.put(
+  '/simulator-sessions/:position',
+  asyncHandler((req, res) => {
+    updateSimulatorSession(Number(req.params.position), req.body);
+    res.status(204).end();
+  })
+);
+
+app.get(
+  '/remarks/:position',
+  asyncHandler((req, res) => {
+    res.json(getRemark(Number(req.params.position)));
+  })
+);
+
 app.post(
   '/remarks',
   asyncHandler((req, res) => {
     const position = addRemark(req.body);
     res.status(201).json({ position });
+  })
+);
+
+app.put(
+  '/remarks/:position',
+  asyncHandler((req, res) => {
+    updateRemark(Number(req.params.position), req.body);
+    res.status(204).end();
   })
 );
 

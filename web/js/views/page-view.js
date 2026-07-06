@@ -56,11 +56,10 @@ function td(text) {
 
 // Compact "card" summary for narrow/mobile screens: date + off-block/on-block
 // + departure/destination for a flight, the closest analog for
-// simulator/remark/totals rows, with everything else tucked behind Expand.
+// simulator/remark rows, with everything else tucked behind Expand. Totals
+// rows are handled separately (see renderCards) - a single plain line
+// instead of a bold headline + sub-line.
 function summaryFor(row, kind) {
-  if (kind === 'totals') {
-    return { main: TOTALS_LABELS[row.sort_order], sub: row.total_time ? `Total ${row.total_time}` : '' };
-  }
   if (kind === 'simulator') {
     return { main: `Simulator: ${row.fstd_type ?? ''}`, sub: [row.date, row.simulator_time].filter(Boolean).join(' · ') };
   }
@@ -73,25 +72,22 @@ function summaryFor(row, kind) {
   };
 }
 
-// `onEditFlight(position)` and `onDeleteEntry(position)` are supplied by the
+// `onEdit(position, kind)` and `onDeleteEntry(position)` are supplied by the
 // caller (app.js) rather than imported directly, so this module doesn't need
-// to know about dialogs.
-export function createPageView({ tableBody, cardList, onEditFlight, onDeleteEntry }) {
+// to know about dialogs - app.js routes `onEdit` to the matching dialog.
+export function createPageView({ tableBody, cardList, onEdit, onDeleteEntry }) {
   function buildActionButtons(position, kind) {
-    const buttons = [];
-    if (kind === 'flight') {
-      const editBtn = document.createElement('button');
-      editBtn.type = 'button';
-      editBtn.textContent = 'Edit';
-      editBtn.addEventListener('click', () => onEditFlight(position));
-      buttons.push(editBtn);
-    }
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => onEdit(position, kind));
+
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.textContent = 'Delete';
     deleteBtn.addEventListener('click', () => onDeleteEntry(position));
-    buttons.push(deleteBtn);
-    return buttons;
+
+    return [editBtn, deleteBtn];
   }
 
   function renderTable(rows) {
@@ -101,10 +97,11 @@ export function createPageView({ tableBody, cardList, onEditFlight, onDeleteEntr
       const isEntry = row.sort_order === 0;
       tr.className = isEntry ? 'entry-row' : 'totals-row';
 
-      tr.appendChild(td(isEntry ? row.page_position : TOTALS_LABELS[row.sort_order]));
+      tr.appendChild(td(isEntry ? '' : TOTALS_LABELS[row.sort_order]));
       for (const column of COLUMNS) tr.appendChild(td(row[column.key]));
 
       const actionsCell = document.createElement('td');
+      actionsCell.className = 'actions-cell';
       if (isEntry) {
         actionsCell.append(...buildActionButtons(positionOf(row), rowKind(row)));
       }
@@ -119,7 +116,6 @@ export function createPageView({ tableBody, cardList, onEditFlight, onDeleteEntr
     for (const row of rows) {
       const isEntry = row.sort_order === 0;
       const kind = isEntry ? rowKind(row) : 'totals';
-      const { main, sub } = summaryFor(row, kind);
 
       const card = document.createElement('div');
       card.className = isEntry ? 'entry-card' : 'entry-card totals-card';
@@ -127,13 +123,23 @@ export function createPageView({ tableBody, cardList, onEditFlight, onDeleteEntr
       const summaryBtn = document.createElement('button');
       summaryBtn.type = 'button';
       summaryBtn.className = 'card-summary';
-      summaryBtn.innerHTML = `
-        <span class="summary-tag">${isEntry ? row.page_position : ''}</span>
-        <span class="summary-text"><span class="summary-main"></span><span class="summary-sub"></span></span>
-        <span class="chevron" aria-hidden="true">▾</span>
-      `;
-      summaryBtn.querySelector('.summary-main').textContent = main;
-      summaryBtn.querySelector('.summary-sub').textContent = sub;
+
+      if (kind === 'totals') {
+        summaryBtn.innerHTML = `
+          <span class="summary-plain"></span>
+          <span class="chevron" aria-hidden="true">▾</span>
+        `;
+        summaryBtn.querySelector('.summary-plain').textContent =
+          `${TOTALS_LABELS[row.sort_order]}: ${row.total_time ?? ''}`;
+      } else {
+        const { main, sub } = summaryFor(row, kind);
+        summaryBtn.innerHTML = `
+          <span class="summary-text"><span class="summary-main"></span><span class="summary-sub"></span></span>
+          <span class="chevron" aria-hidden="true">▾</span>
+        `;
+        summaryBtn.querySelector('.summary-main').textContent = main;
+        summaryBtn.querySelector('.summary-sub').textContent = sub;
+      }
 
       const details = document.createElement('div');
       details.className = 'card-details';
