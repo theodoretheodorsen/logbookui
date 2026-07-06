@@ -23,8 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # web/ becomes the site root, but web/js/logbook-api.js imports the
+      # shared lib/ (repo root, sibling of web/) via a relative path that
+      # expects it one level up from the site root - so lib/ needs to be
+      # copied in as a sibling of web/'s own contents before upload.
+      - name: Assemble site (web/ + lib/)
+        run: |
+          mkdir _site
+          cp -r web/. _site/
+          cp -r lib _site/lib
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

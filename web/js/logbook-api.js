@@ -3,19 +3,19 @@
 // rather than importing /lib/*.js or db.js directly, so there is one place
 // that knows how the UI is wired to the database.
 import { loadDatabase, getDb, withTransaction, exportDatabase } from './db.js';
-import { listAircraft as listAircraftRaw } from '/lib/aircraft.js';
-import { createFlightsApi } from '/lib/flights.js';
-import { createSimulatorApi, listFstdTypes as listFstdTypesRaw } from '/lib/simulator.js';
-import { createRemarksApi } from '/lib/remarks.js';
-import { deleteEntryAt } from '/lib/entries.js';
-import { createPagesApi } from '/lib/pages.js';
+import { listAircraft as listAircraftRaw } from '../lib/aircraft.js';
+import { createFlightsApi } from '../lib/flights.js';
+import { createSimulatorApi, listFstdTypes as listFstdTypesRaw } from '../lib/simulator.js';
+import { createRemarksApi } from '../lib/remarks.js';
+import { deleteEntryAt } from '../lib/entries.js';
+import { createPagesApi } from '../lib/pages.js';
 import {
   getEntriesForExport as getEntriesForExportRaw,
   getExportTotals as getExportTotalsRaw,
   getPagesForExport as getPagesForExportRaw,
   listAirports as listAirportsRaw,
   listPicNames as listPicNamesRaw,
-} from '/lib/export.js';
+} from '../lib/export.js';
 
 const { addFlight, updateFlight, getFlight, getLastFlight } = createFlightsApi({ getDb, withTransaction });
 const { addSimulatorSession, updateSimulatorSession, getSimulatorSession } = createSimulatorApi({
