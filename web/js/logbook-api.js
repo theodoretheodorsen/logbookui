@@ -13,6 +13,8 @@ import {
   getEntriesForExport as getEntriesForExportRaw,
   getExportTotals as getExportTotalsRaw,
   getPagesForExport as getPagesForExportRaw,
+  listAirports as listAirportsRaw,
+  listPicNames as listPicNamesRaw,
 } from '/lib/export.js';
 
 const { addFlight, updateFlight, getFlight, getLastFlight } = createFlightsApi({ getDb, withTransaction });
@@ -47,6 +49,14 @@ function getPagesForExport(range) {
   return getPagesForExportRaw(getDb(), range);
 }
 
+function listAirports() {
+  return listAirportsRaw(getDb());
+}
+
+function listPicNames() {
+  return listPicNamesRaw(getDb());
+}
+
 export { loadDatabase };
 
 export const logbookApi = {
@@ -68,4 +78,6 @@ export const logbookApi = {
   getEntriesForExport,
   getExportTotals,
   getPagesForExport,
+  listAirports,
+  listPicNames,
 };

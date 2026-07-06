@@ -2,7 +2,9 @@
 // desktop table and the mobile card list - see style.css for which one is
 // actually visible at a given viewport width.
 
-const TOTALS_LABELS = { 1: 'Page total', 2: 'Brought forward', 3: 'Running total' };
+// sort_order 4 is a synthetic row (not from logbook_page_report) built by
+// app.js's applyFilter() for the filtered-results view's single total row.
+const TOTALS_LABELS = { 1: 'Page total', 2: 'Brought forward', 3: 'Running total', 4: 'Filter total' };
 
 // Shared by the table (desktop) and card (mobile) renderers, in table-header
 // order - also reused by the exporters (csv-export.js/print-export.js) so

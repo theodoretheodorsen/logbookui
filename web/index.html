@@ -29,11 +29,16 @@
     <button type="button" id="btn-toggle-toolbar" class="icon-btn plus-btn" title="Add..." aria-label="Show add actions">+</button>
   </nav>
 
+  <div id="filter-banner" hidden>
+    Showing <span id="filter-count">0</span> matching <button type="button" id="btn-clear-filter">Clear filter</button>
+  </div>
+
   <div id="toolbar" hidden>
     <button type="button" id="btn-add-flight" class="icon-btn" title="Add Flight" aria-label="Add Flight">&#9992;&#65039;</button>
     <button type="button" id="btn-add-sim" class="icon-btn" title="Add Simulator Session" aria-label="Add Simulator Session">&#128421;&#65039;</button>
     <button type="button" id="btn-add-remark" class="icon-btn" title="Add Remark" aria-label="Add Remark">&#128221;</button>
     <button type="button" id="btn-export" class="icon-btn" title="Export" aria-label="Export">&#128424;&#65039;</button>
+    <button type="button" id="btn-filter" class="icon-btn" title="Filter" aria-label="Filter">&#128269;</button>
     <span class="edit-mode-control">
       <span class="tool-icon" aria-hidden="true" title="Allow editing and deleting">&#128295;</span>
       <label class="switch">
@@ -250,6 +255,65 @@
     <menu>
       <button type="button" id="export-cancel">Cancel</button>
       <button type="submit">Export</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="filter-dialog">
+  <form id="filter-form">
+    <h2>Filter Logbook</h2>
+
+    <label>PIC name
+      <input type="text" id="filter-pic-name" list="filter-pic-name-list">
+      <datalist id="filter-pic-name-list"></datalist>
+    </label>
+
+    <div class="field-row">
+      <label>Aircraft
+        <select id="filter-aircraft-select">
+          <option value="">Any aircraft</option>
+        </select>
+      </label>
+      <label>Type
+        <select id="filter-aircraft-type-select">
+          <option value="">Any type</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label>Role
+        <select id="filter-role-select">
+          <option value="">Any role</option>
+          <option value="PIC">PIC</option>
+          <option value="SIC">SIC</option>
+          <option value="DUAL">DUAL</option>
+        </select>
+      </label>
+      <label>Entry kind
+        <select id="filter-kind-select">
+          <option value="">Any</option>
+          <option value="flight">Flights</option>
+          <option value="simulator">Simulator sessions</option>
+          <option value="remark">Remarks</option>
+        </select>
+      </label>
+    </div>
+
+    <label>Airport (departure or arrival)
+      <input type="text" id="filter-airport" list="filter-airport-list" maxlength="4">
+      <datalist id="filter-airport-list"></datalist>
+    </label>
+
+    <div class="field-row">
+      <label>From <input type="date" id="filter-date-from"></label>
+      <label>To <input type="date" id="filter-date-to"></label>
+    </div>
+
+    <menu>
+      <button type="button" id="filter-clear">Clear filter</button>
+      <button type="button" id="filter-cancel">Cancel</button>
+      <button type="submit">Apply</button>
     </menu>
   </form>
 </dialog>

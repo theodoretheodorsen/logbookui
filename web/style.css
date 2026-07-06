@@ -26,6 +26,13 @@ body {
   margin-bottom: 0.75rem;
 }
 
+/* [hidden]'s default display:none has low specificity - an ID selector like
+   #page-nav above wins over it even more easily than a class would (same
+   recurring gotcha as #toolbar[hidden]/#filter-banner[hidden] etc.). */
+#page-nav[hidden] {
+  display: none;
+}
+
 .page-jump {
   display: flex;
   align-items: baseline;
@@ -50,6 +57,22 @@ body {
 
 .page-sep {
   color: #888;
+}
+
+#filter-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* [hidden]'s default display:none has low specificity - the #filter-banner
+   rule above would otherwise win and show it anyway (same gotcha as
+   #toolbar[hidden] below, .card-details[hidden], dialog form label[hidden]). */
+#filter-banner[hidden] {
+  display: none;
 }
 
 #toolbar {
@@ -327,6 +350,14 @@ dialog form input[type='checkbox'] {
   gap: 0.5rem;
   margin-bottom: 0.6rem;
   flex-wrap: wrap;
+}
+
+/* [hidden]'s default display:none has equal specificity to the class rule
+   above, and author styles win specificity ties over the UA stylesheet - so
+   without this, a hidden .field-row (e.g. the export dialog's date/page
+   range inputs) stays visible regardless of its `hidden` attribute. */
+.field-row[hidden] {
+  display: none;
 }
 
 .field-row > label {
