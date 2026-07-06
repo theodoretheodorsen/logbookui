@@ -4,8 +4,10 @@
 
 const TOTALS_LABELS = { 1: 'Page total', 2: 'Brought forward', 3: 'Running total' };
 
-// Shared by the table (desktop) and card (mobile) renderers, in table-header order.
-const COLUMNS = [
+// Shared by the table (desktop) and card (mobile) renderers, in table-header
+// order - also reused by the exporters (csv-export.js/print-export.js) so
+// the export column set/order always matches the on-screen table.
+export const COLUMNS = [
   { key: 'date', label: 'Date' },
   { key: 'departure', label: 'From' },
   { key: 'off_block_time', label: 'Off' },
@@ -97,8 +99,10 @@ export function createPageView({ tableBody, cardList, onEdit, onDeleteEntry }) {
       const isEntry = row.sort_order === 0;
       tr.className = isEntry ? 'entry-row' : 'totals-row';
 
-      tr.appendChild(td(isEntry ? '' : TOTALS_LABELS[row.sort_order]));
-      for (const column of COLUMNS) tr.appendChild(td(row[column.key]));
+      for (const column of COLUMNS) {
+        const value = !isEntry && column.key === 'date' ? TOTALS_LABELS[row.sort_order] : row[column.key];
+        tr.appendChild(td(value));
+      }
 
       const actionsCell = document.createElement('td');
       actionsCell.className = 'actions-cell';

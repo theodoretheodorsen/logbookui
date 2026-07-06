@@ -33,6 +33,7 @@
     <button type="button" id="btn-add-flight" class="icon-btn" title="Add Flight" aria-label="Add Flight">&#9992;&#65039;</button>
     <button type="button" id="btn-add-sim" class="icon-btn" title="Add Simulator Session" aria-label="Add Simulator Session">&#128421;&#65039;</button>
     <button type="button" id="btn-add-remark" class="icon-btn" title="Add Remark" aria-label="Add Remark">&#128221;</button>
+    <button type="button" id="btn-export" class="icon-btn" title="Export" aria-label="Export">&#128424;&#65039;</button>
     <span class="edit-mode-control">
       <span class="tool-icon" aria-hidden="true" title="Allow editing and deleting">&#128295;</span>
       <label class="switch">
@@ -46,7 +47,6 @@
     <table id="page-table">
       <thead>
         <tr>
-          <th></th>
           <th>Date</th>
           <th>From</th>
           <th>Off</th>
@@ -207,6 +207,49 @@
     <menu>
       <button type="button" id="remark-cancel">Cancel</button>
       <button type="submit">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="export-dialog">
+  <form id="export-form">
+    <h2>Export Logbook</h2>
+
+    <fieldset>
+      <legend>Format</legend>
+      <label class="inline-radio"><input type="radio" name="export-format" id="export-format-csv" value="csv" checked> CSV</label>
+      <label class="inline-radio"><input type="radio" name="export-format" id="export-format-pdf" value="pdf"> PDF (print)</label>
+    </fieldset>
+
+    <fieldset id="export-pdf-mode-fields" hidden>
+      <legend>PDF mode</legend>
+      <label class="inline-radio"><input type="radio" name="export-pdf-mode" id="export-pdf-mode-list" value="list" checked> List of flights</label>
+      <label class="inline-radio"><input type="radio" name="export-pdf-mode" id="export-pdf-mode-pages" value="pages"> Logbook pages</label>
+    </fieldset>
+
+    <fieldset id="export-date-range-fields">
+      <legend>Range</legend>
+      <label class="inline-radio"><input type="radio" name="export-date-range" id="export-date-range-full" value="full" checked> Full book</label>
+      <label class="inline-radio"><input type="radio" name="export-date-range" id="export-date-range-range" value="range"> Date range</label>
+      <div id="export-date-inputs" class="field-row" hidden>
+        <label>From <input type="date" id="export-date-from" required></label>
+        <label>To <input type="date" id="export-date-to" required></label>
+      </div>
+    </fieldset>
+
+    <fieldset id="export-page-range-fields" hidden>
+      <legend>Range</legend>
+      <label class="inline-radio"><input type="radio" name="export-page-range" id="export-page-range-full" value="full" checked> Full book</label>
+      <label class="inline-radio"><input type="radio" name="export-page-range" id="export-page-range-range" value="range"> Page range</label>
+      <div id="export-page-inputs" class="field-row" hidden>
+        <label>From page <input type="number" id="export-page-from" min="1" required></label>
+        <label>To page <input type="number" id="export-page-to" min="1" required></label>
+      </div>
+    </fieldset>
+
+    <menu>
+      <button type="button" id="export-cancel">Cancel</button>
+      <button type="submit">Export</button>
     </menu>
   </form>
 </dialog>

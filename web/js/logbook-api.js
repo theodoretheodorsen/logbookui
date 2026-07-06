@@ -9,6 +9,11 @@ import { createSimulatorApi, listFstdTypes as listFstdTypesRaw } from '/lib/simu
 import { createRemarksApi } from '/lib/remarks.js';
 import { deleteEntryAt } from '/lib/entries.js';
 import { createPagesApi } from '/lib/pages.js';
+import {
+  getEntriesForExport as getEntriesForExportRaw,
+  getExportTotals as getExportTotalsRaw,
+  getPagesForExport as getPagesForExportRaw,
+} from '/lib/export.js';
 
 const { addFlight, updateFlight, getFlight, getLastFlight } = createFlightsApi({ getDb, withTransaction });
 const { addSimulatorSession, updateSimulatorSession, getSimulatorSession } = createSimulatorApi({
@@ -30,6 +35,18 @@ function deleteEntry(position) {
   withTransaction((db) => deleteEntryAt(db, position));
 }
 
+function getEntriesForExport(range) {
+  return getEntriesForExportRaw(getDb(), range);
+}
+
+function getExportTotals(range) {
+  return getExportTotalsRaw(getDb(), range);
+}
+
+function getPagesForExport(range) {
+  return getPagesForExportRaw(getDb(), range);
+}
+
 export { loadDatabase };
 
 export const logbookApi = {
@@ -48,4 +65,7 @@ export const logbookApi = {
   listAircraft,
   listFstdTypes,
   deleteEntry,
+  getEntriesForExport,
+  getExportTotals,
+  getPagesForExport,
 };
