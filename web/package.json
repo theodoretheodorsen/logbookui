@@ -1,0 +1,8 @@
+{
+  "name": "logbook-web",
+  "private": true,
+  "description": "Fetches sql.js's prebuilt dist files into vendor/; not used at runtime (the page has no build step).",
+  "devDependencies": {
+    "sql.js": "^1.11.0"
+  }
+}

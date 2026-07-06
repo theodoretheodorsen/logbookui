@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flight Logbook</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Flight Logbook</h1>
+
+<section id="open-panel">
+  <label>Open logbook.db: <input type="file" id="file-input" accept=".db"></label>
+  <p class="hint">Nothing is saved back to disk in this version — edits only live in this browser
+    tab and are lost on reload.</p>
+</section>
+
+<section id="app" hidden>
+  <div id="filename"></div>
+
+  <div id="error-box" class="error" hidden></div>
+
+  <nav id="page-nav">
+    <button type="button" id="btn-first" title="First page">&laquo; First</button>
+    <button type="button" id="btn-prev" title="Previous page">&lsaquo; Prev</button>
+    <span class="page-jump">
+      Page <input type="number" id="page-input" min="1" size="4">
+      of <span id="last-page">-</span>
+      <button type="button" id="btn-go">Go</button>
+    </span>
+    <button type="button" id="btn-next" title="Next page">Next &rsaquo;</button>
+    <button type="button" id="btn-last" title="Last page">Last &raquo;</button>
+  </nav>
+
+  <div id="toolbar">
+    <button type="button" id="btn-add-flight">+ Add Flight</button>
+    <button type="button" id="btn-add-sim">+ Add Simulator Session</button>
+    <button type="button" id="btn-add-remark">+ Add Remark</button>
+  </div>
+
+  <div id="page-table-wrap">
+    <table id="page-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>From</th>
+          <th>Off</th>
+          <th>To</th>
+          <th>On</th>
+          <th>Type</th>
+          <th>Reg</th>
+          <th>PIC Name</th>
+          <th>SE</th>
+          <th>ME</th>
+          <th>MP</th>
+          <th>Total</th>
+          <th>IFR</th>
+          <th>PIC</th>
+          <th>SIC</th>
+          <th>DUAL</th>
+          <th>Day Ldg</th>
+          <th>Night Ldg</th>
+          <th>Sim Type</th>
+          <th>Sim</th>
+          <th>Remarks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="page-table-body"></tbody>
+    </table>
+  </div>
+
+  <div id="page-card-list"></div>
+</section>
+
+<dialog id="flight-dialog">
+  <form id="flight-form">
+    <h2 id="flight-dialog-title">Add Flight</h2>
+
+    <label>Position (optional, default: append)
+      <input type="number" id="flight-position" min="1">
+    </label>
+
+    <label>Off-block (UTC)
+      <input type="datetime-local" id="flight-off-block" required>
+    </label>
+    <label>On-block (UTC)
+      <input type="datetime-local" id="flight-on-block" required>
+    </label>
+
+    <label>Departure (ICAO)
+      <input type="text" id="flight-departure" required>
+    </label>
+    <label>Destination (ICAO)
+      <input type="text" id="flight-destination" required>
+    </label>
+
+    <label>Aircraft
+      <select id="flight-aircraft-select"></select>
+    </label>
+
+    <fieldset id="flight-new-aircraft-fields" hidden>
+      <legend>New aircraft</legend>
+      <label>Registration
+        <input type="text" id="flight-new-registration">
+      </label>
+      <label>Type
+        <input type="text" id="flight-new-type">
+      </label>
+      <label>Pilot operation
+        <select id="flight-new-pilot-operation">
+          <option value="SP">SP - single pilot</option>
+          <option value="MP">MP - multi pilot</option>
+        </select>
+      </label>
+      <label>Engine configuration
+        <select id="flight-new-engine-configuration">
+          <option value="SE">SE - single engine</option>
+          <option value="ME">ME - multi engine</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <label>PIC name
+      <input type="text" id="flight-pic-name">
+    </label>
+
+    <label>Role
+      <select id="flight-role" required>
+        <option value="PIC">PIC</option>
+        <option value="SIC">SIC</option>
+        <option value="DUAL">DUAL</option>
+      </select>
+    </label>
+
+    <label>Flight rules
+      <select id="flight-rules" required>
+        <option value="VFR">VFR</option>
+        <option value="IFR">IFR</option>
+      </select>
+    </label>
+
+    <label>Day landings
+      <input type="number" id="flight-day-landings" min="0">
+    </label>
+    <label>Night landings
+      <input type="number" id="flight-night-landings" min="0">
+    </label>
+
+    <label>Remarks
+      <input type="text" id="flight-remarks">
+    </label>
+
+    <menu>
+      <button type="button" id="flight-cancel">Cancel</button>
+      <button type="submit">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="sim-dialog">
+  <form id="sim-form">
+    <h2>Add Simulator Session</h2>
+
+    <label>Position (optional, default: append)
+      <input type="number" id="sim-position" min="1">
+    </label>
+
+    <label>Session date
+      <input type="date" id="sim-session-date" required>
+    </label>
+    <label>FSTD type
+      <input type="text" id="sim-fstd-type" required>
+    </label>
+    <label>Duration (minutes)
+      <input type="number" id="sim-duration" min="1" required>
+    </label>
+    <label>Remarks
+      <input type="text" id="sim-remarks">
+    </label>
+
+    <menu>
+      <button type="button" id="sim-cancel">Cancel</button>
+      <button type="submit">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="remark-dialog">
+  <form id="remark-form">
+    <h2>Add Remark</h2>
+
+    <label>Position (optional, default: append)
+      <input type="number" id="remark-position" min="1">
+    </label>
+
+    <label>Text (optional, blank line if empty)
+      <input type="text" id="remark-text">
+    </label>
+
+    <menu>
+      <button type="button" id="remark-cancel">Cancel</button>
+      <button type="submit">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<script src="vendor/sql-wasm.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

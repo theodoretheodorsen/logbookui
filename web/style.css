@@ -1,0 +1,272 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 1.5rem;
+  color: #1a1a1a;
+}
+
+h1 {
+  font-size: 1.4rem;
+}
+
+.hint {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.error {
+  background: #fde2e2;
+  border: 1px solid #c0392b;
+  color: #7a1f1f;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+#filename {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+#page-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.page-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.page-jump input {
+  width: 4.5rem;
+}
+
+#toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#page-table-wrap {
+  overflow-x: auto;
+}
+
+#page-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+#page-table th,
+#page-table td {
+  border: 1px solid #ccc;
+  padding: 0.25rem 0.4rem;
+  text-align: left;
+}
+
+#page-table thead {
+  background: #f0f0f0;
+}
+
+tr.totals-row {
+  background: #eef4fb;
+  font-weight: 600;
+}
+
+/* Card view: hidden on wide screens, shown instead of the table on narrow
+   ones (see the @media block below). Built from the same row data as the
+   table so the two never drift apart. */
+#page-card-list {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entry-card {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.totals-card {
+  background: #eef4fb;
+}
+
+.card-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.summary-tag {
+  font-size: 0.75rem;
+  color: #666;
+  min-width: 2.5em;
+}
+
+.summary-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-main {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-sub {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+}
+
+.card-summary.expanded .chevron {
+  transform: rotate(180deg);
+}
+
+.card-details {
+  padding: 0.5rem 0.75rem 0.75rem;
+  border-top: 1px solid #ddd;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* [hidden]'s default display:none has low specificity - a bare class rule
+   with display:grid above would otherwise win and show it anyway. */
+.card-details[hidden] {
+  display: none;
+}
+
+.card-field-label {
+  color: #666;
+}
+
+.card-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+dialog {
+  border: 1px solid #999;
+  border-radius: 6px;
+  padding: 1rem 1.5rem;
+  max-width: 30rem;
+}
+
+dialog form label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+}
+
+dialog form label[hidden] {
+  display: none;
+}
+
+dialog form input,
+dialog form select {
+  display: block;
+  width: 100%;
+  margin-top: 0.2rem;
+  box-sizing: border-box;
+}
+
+dialog fieldset {
+  margin-bottom: 0.6rem;
+}
+
+dialog menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+@media (max-width: 700px) {
+  body {
+    margin: 0.75rem;
+  }
+
+  #page-table-wrap {
+    display: none;
+  }
+
+  #page-card-list {
+    display: flex;
+  }
+
+  #page-nav,
+  #toolbar {
+    flex-wrap: wrap;
+  }
+
+  #toolbar button {
+    flex: 1 1 auto;
+  }
+
+  dialog {
+    max-width: none;
+    width: 90vw;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1e1e1e;
+    color: #ddd;
+  }
+  .hint {
+    color: #999;
+  }
+  #page-table thead {
+    background: #2a2a2a;
+  }
+  #page-table th,
+  #page-table td {
+    border-color: #444;
+  }
+  tr.totals-row {
+    background: #26344a;
+  }
+  .entry-card {
+    border-color: #444;
+  }
+  .totals-card {
+    background: #26344a;
+  }
+  .card-details {
+    border-color: #444;
+  }
+  .summary-tag,
+  .summary-sub,
+  .card-field-label {
+    color: #aaa;
+  }
+  dialog {
+    background: #2a2a2a;
+    color: #ddd;
+    border-color: #555;
+  }
+}
