@@ -5,6 +5,7 @@ import { printEntryList, printLogbookPages } from '../exporters/print-export.js'
 
 export function createExportDialog() {
   const dialog = el('export-dialog');
+  const title = el('export-dialog-title');
   const form = el('export-form');
 
   const pdfModeFields = el('export-pdf-mode-fields');
@@ -17,6 +18,12 @@ export function createExportDialog() {
   const pageFrom = el('export-page-from');
   const pageTo = el('export-page-to');
 
+  // Set (to the active filter's criteria) when opened while the filtered-
+  // results view is showing - exporting then means "export exactly what's
+  // currently on screen": no logbook-pages mode (a filtered set isn't
+  // page-aligned) and no separate range to pick, just CSV or PDF.
+  let filterCriteria = null;
+
   el('export-cancel').addEventListener('click', () => dialog.close());
 
   function selectedValue(name) {
@@ -27,6 +34,17 @@ export function createExportDialog() {
   // groups' current state - called on open and on every change, since any
   // of the four can affect what the other three should show.
   function updateVisibility() {
+    if (filterCriteria) {
+      pdfModeFields.hidden = true;
+      dateRangeFields.hidden = true;
+      pageRangeFields.hidden = true;
+      dateFrom.required = false;
+      dateTo.required = false;
+      pageFrom.required = false;
+      pageTo.required = false;
+      return;
+    }
+
     const format = selectedValue('export-format');
     const pdfMode = selectedValue('export-pdf-mode');
 
@@ -70,9 +88,14 @@ export function createExportDialog() {
     };
   }
 
-  function open() {
+  // `activeFilter` is the currently-applied filter criteria (see
+  // app.js/filter-dialog.js) if the filtered-results view is showing, or
+  // null/undefined for the normal "export the whole book or a range" flow.
+  function open(activeFilter) {
     clearError();
     form.reset();
+    filterCriteria = activeFilter || null;
+    title.textContent = filterCriteria ? 'Export Filtered Results' : 'Export Logbook';
     updateVisibility();
     dialog.showModal();
   }
@@ -85,7 +108,10 @@ export function createExportDialog() {
     const pdfMode = selectedValue('export-pdf-mode');
 
     try {
-      if (format === 'csv') {
+      if (filterCriteria) {
+        if (format === 'csv') exportCsv(filterCriteria);
+        else printEntryList(filterCriteria);
+      } else if (format === 'csv') {
         exportCsv(dateRange());
       } else if (pdfMode === 'list') {
         printEntryList(dateRange());

@@ -47,6 +47,24 @@ function buildHeaderRow(doc) {
   return thead;
 }
 
+// Describes whichever criteria are actually set (PIC/aircraft/type/role/
+// kind/airport/date), not just a date range - printEntryList is used both
+// for the plain date-range export and for "export what's currently
+// filtered", which can be filtered by any combination of these.
+function describeCriteria(criteria) {
+  const parts = [];
+  if (criteria.pic) parts.push(`PIC "${criteria.pic}"`);
+  if (criteria.registration) parts.push(`aircraft ${criteria.registration}`);
+  if (criteria.aircraftType) parts.push(`type ${criteria.aircraftType}`);
+  if (criteria.role) parts.push(`role ${criteria.role}`);
+  if (criteria.kind) parts.push(`${criteria.kind} entries`);
+  if (criteria.airport) parts.push(`airport ${criteria.airport}`);
+  if (criteria.from && criteria.to) parts.push(`${criteria.from} to ${criteria.to}`);
+  else if (criteria.from) parts.push(`from ${criteria.from}`);
+  else if (criteria.to) parts.push(`up to ${criteria.to}`);
+  return parts.length ? `Flights — ${parts.join(', ')}` : 'Flights — full logbook';
+}
+
 function buildRow(doc, values, { bold } = {}) {
   const tr = doc.createElement('tr');
   if (bold) tr.className = 'totals-row';
@@ -66,7 +84,7 @@ export function printEntryList(range) {
   const { printWindow, doc } = openPrintWindow('Logbook export');
 
   const h1 = doc.createElement('h1');
-  h1.textContent = range.from && range.to ? `Flights ${range.from} to ${range.to}` : 'Flights — full logbook';
+  h1.textContent = describeCriteria(range);
   doc.body.appendChild(h1);
 
   const table = doc.createElement('table');

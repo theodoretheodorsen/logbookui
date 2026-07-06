@@ -124,7 +124,7 @@ pageInput.addEventListener('keydown', (event) => {
 el('btn-add-flight').addEventListener('click', () => flightDialog.open());
 el('btn-add-sim').addEventListener('click', () => simDialog.open());
 el('btn-add-remark').addEventListener('click', () => remarkDialog.open());
-el('btn-export').addEventListener('click', () => exportDialog.open());
+el('btn-export').addEventListener('click', () => exportDialog.open(activeFilter));
 el('btn-filter').addEventListener('click', () => filterDialog.open());
 el('btn-clear-filter').addEventListener('click', clearFilter);
 
