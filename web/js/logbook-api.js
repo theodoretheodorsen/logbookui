@@ -2,7 +2,7 @@
 // db.js (sql.js). Everything else in web/js/ should go through `logbookApi`
 // rather than importing /lib/*.js or db.js directly, so there is one place
 // that knows how the UI is wired to the database.
-import { loadDatabase, getDb, withTransaction } from './db.js';
+import { loadDatabase, getDb, withTransaction, exportDatabase } from './db.js';
 import { listAircraft as listAircraftRaw } from '/lib/aircraft.js';
 import { createFlightsApi } from '/lib/flights.js';
 import { createSimulatorApi, listFstdTypes as listFstdTypesRaw } from '/lib/simulator.js';
@@ -57,7 +57,7 @@ function listPicNames() {
   return listPicNamesRaw(getDb());
 }
 
-export { loadDatabase };
+export { loadDatabase, exportDatabase };
 
 export const logbookApi = {
   addFlight,

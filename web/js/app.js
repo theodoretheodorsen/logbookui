@@ -1,5 +1,5 @@
 import { el } from './dom.js';
-import { loadDatabase, logbookApi } from './logbook-api.js';
+import { loadDatabase, exportDatabase, logbookApi } from './logbook-api.js';
 import { showError, clearError } from './error-banner.js';
 import { createPageView } from './views/page-view.js';
 import { createFlightDialog } from './dialogs/flight-dialog.js';
@@ -7,9 +7,12 @@ import { createSimulatorDialog } from './dialogs/simulator-dialog.js';
 import { createRemarkDialog } from './dialogs/remark-dialog.js';
 import { createExportDialog } from './dialogs/export-dialog.js';
 import { createFilterDialog } from './dialogs/filter-dialog.js';
+import { buildCsv } from './exporters/csv-export.js';
+import { getToken, setToken, fetchFile, putFile, textToBytes } from './github-storage.js';
 
 const openPanel = el('open-panel');
 const app = el('app');
+const githubTokenInput = el('github-token-input');
 const pageInput = el('page-input');
 const lastPageEl = el('last-page');
 const toolbar = el('toolbar');
@@ -112,7 +115,10 @@ const remarkDialog = createRemarkDialog({ onSaved: refreshAfterSave });
 const exportDialog = createExportDialog();
 const filterDialog = createFilterDialog({ onApply: applyFilter, onClear: clearFilter });
 
+githubTokenInput.value = getToken();
 el('file-input').addEventListener('change', onFileChosen);
+el('btn-load-github').addEventListener('click', onLoadFromGithub);
+el('btn-save-github').addEventListener('click', onSaveToGithub);
 el('btn-first').addEventListener('click', () => goToPage(1));
 el('btn-prev').addEventListener('click', () => goToPage(currentPage - 1));
 el('btn-next').addEventListener('click', () => goToPage(currentPage + 1));
@@ -148,5 +154,29 @@ async function onFileChosen(event) {
     goToPage(logbookApi.getLastPageNumber());
   } catch (err) {
     showError(`Could not open ${file.name}: ${err.message}`);
+  }
+}
+
+async function onLoadFromGithub() {
+  clearError();
+  setToken(githubTokenInput.value);
+  try {
+    const { bytes } = await fetchFile('logbook.db');
+    await loadDatabase(bytes.buffer);
+    openPanel.hidden = true;
+    app.hidden = false;
+    goToPage(logbookApi.getLastPageNumber());
+  } catch (err) {
+    showError(`Could not load from GitHub: ${err.message}`);
+  }
+}
+
+async function onSaveToGithub() {
+  clearError();
+  try {
+    await putFile('logbook.db', exportDatabase(), 'Update logbook.db');
+    await putFile('logbook.csv', textToBytes(buildCsv({})), 'Update logbook.csv');
+  } catch (err) {
+    showError(`Could not save to GitHub: ${err.message}`);
   }
 }

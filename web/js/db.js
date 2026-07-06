@@ -5,6 +5,7 @@
 
 let SQL = null;
 let db = null;
+let rawDb = null;
 
 async function initSql() {
   if (!SQL) {
@@ -56,7 +57,7 @@ function wrapDb(rawDb) {
 // adapter that the rest of the app and the ported lib/*.js files use.
 async function loadDatabase(arrayBuffer) {
   await initSql();
-  const rawDb = new SQL.Database(new Uint8Array(arrayBuffer));
+  rawDb = new SQL.Database(new Uint8Array(arrayBuffer));
   rawDb.exec('PRAGMA foreign_keys = ON;');
   db = wrapDb(rawDb);
   return db;
@@ -65,6 +66,13 @@ async function loadDatabase(arrayBuffer) {
 function getDb() {
   if (!db) throw new Error('No database loaded yet');
   return db;
+}
+
+// The current in-memory database as bytes (sql.js's built-in serialization),
+// used to save back to GitHub - see github-storage.js.
+function exportDatabase() {
+  if (!rawDb) throw new Error('No database loaded yet');
+  return rawDb.export();
 }
 
 // Same BEGIN/COMMIT/ROLLBACK pattern as api/db.js's withTransaction.
@@ -81,4 +89,4 @@ function withTransaction(fn) {
   }
 }
 
-export { loadDatabase, getDb, withTransaction };
+export { loadDatabase, getDb, withTransaction, exportDatabase };

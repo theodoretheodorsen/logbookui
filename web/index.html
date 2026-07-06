@@ -7,15 +7,22 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="error-box" class="error" hidden></div>
+
 <section id="open-panel">
-  <label>Open logbook.db: <input type="file" id="file-input" accept=".db"></label>
-  <p class="hint">Nothing is saved back to disk in this version — edits only live in this browser
-    tab and are lost on reload.</p>
+  <div id="github-open">
+    <label>GitHub token: <input type="password" id="github-token-input" autocomplete="off"></label>
+    <button type="button" id="btn-load-github">Load from GitHub</button>
+    <p class="hint">Loads logbook.db from the private logbook-data repo. The token is a
+      fine-grained GitHub PAT (Contents: read/write, scoped to just that repo) - it's kept only
+      in this browser via localStorage, never sent anywhere but api.github.com.</p>
+  </div>
+  <label>...or open a local file: <input type="file" id="file-input" accept=".db"></label>
+  <p class="hint">Edits only live in this browser tab until you save (to GitHub, or nothing is
+    written back for a locally-opened file until you do).</p>
 </section>
 
 <section id="app" hidden>
-  <div id="error-box" class="error" hidden></div>
-
   <nav id="page-nav">
     <button type="button" id="btn-first" class="icon-btn" title="First page" aria-label="First page">&laquo;</button>
     <button type="button" id="btn-prev" class="icon-btn" title="Previous page" aria-label="Previous page">&lsaquo;</button>
@@ -39,6 +46,7 @@
     <button type="button" id="btn-add-remark" class="icon-btn" title="Add Remark" aria-label="Add Remark">&#128221;</button>
     <button type="button" id="btn-export" class="icon-btn" title="Export" aria-label="Export">&#128424;&#65039;</button>
     <button type="button" id="btn-filter" class="icon-btn" title="Filter" aria-label="Filter">&#128269;</button>
+    <button type="button" id="btn-save-github" class="icon-btn" title="Save to GitHub" aria-label="Save to GitHub">&#128190;</button>
     <span class="edit-mode-control">
       <span class="tool-icon" aria-hidden="true" title="Allow editing and deleting">&#128295;</span>
       <label class="switch">

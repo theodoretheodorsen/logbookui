@@ -125,10 +125,12 @@ node web/serve.js   # listens on http://localhost:8080 (needed because
                      # sql.js's .wasm fetch requires http://, not file://)
 ```
 
-Open the page, pick `logbook.db` from disk, and edit freely — under 700px
-width the page/line table collapses into tap-to-expand cards for one-handed
-phone use. **Nothing is saved back to disk yet**: everything happens in
-browser memory and is lost on refresh. The plan is for it to load/save
-straight from/to the `logbook-data` repo via the GitHub API instead of a
-local file picker, so every save becomes a commit there; that isn't built
-yet.
+Open the page and either load `logbook.db` straight from the `logbook-data`
+repo (paste a fine-grained GitHub PAT scoped to that repo, "Contents: read
+and write") or pick a local copy from disk — under 700px width the
+page/line table collapses into tap-to-expand cards for one-handed phone
+use. Edits live in browser memory until you hit "Save to GitHub" (💾 in the
+toolbar), which commits both `logbook.db` and a freshly regenerated
+`logbook.csv` back to `logbook-data` (two commits, since the Contents API
+is one file per call). A locally-opened file can be saved to GitHub the
+same way the first time; nothing is ever written back to local disk.
