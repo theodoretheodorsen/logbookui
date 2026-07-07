@@ -134,3 +134,33 @@ toolbar), which commits both `logbook.db` and a freshly regenerated
 `logbook.csv` back to `logbook-data` (two commits, since the Contents API
 is one file per call). A locally-opened file can be saved to GitHub the
 same way the first time; nothing is ever written back to local disk.
+
+### Progressive Web App (installable on Android)
+
+The app is installable — on Android, Chrome's "Install app" (three-dot menu,
+or an automatic banner) adds a home-screen icon that launches full-screen,
+no browser chrome. This is `web/manifest.webmanifest` + `web/sw.js` (a
+hand-written service worker, no Workbox/build step): `sw.js` precaches the
+small set of files needed to boot the shell at all (`index.html`,
+`style.css`, the manifest, `vendor/sql-wasm.*`, the two largest icons), then
+opportunistically caches everything else (every `web/js/*.js` and `lib/*.js`
+module) the first time it's actually fetched — so a new dialog/exporter file
+just works once fetched online, with no `sw.js` edit required. It never
+intercepts cross-origin requests (`api.github.com`) or non-GET requests,
+since logbook data load/save always requires a live network call by design.
+
+App icons (`web/icons/*.png`) are generated from the same epaulette emblem
+used on the cover/menu button, via `scripts/generate-pwa-icons.ps1` (.NET
+`System.Drawing`/GDI+, no npm dependency) — rerun it if the icon design or
+brand colors ever change.
+
+`logbook.db` itself is also cached, separately, in IndexedDB
+(`web/js/offline-cache.js`) every time it's successfully downloaded from or
+saved to GitHub — a single last-known-good copy, replaced on every
+successful load/save. If "Open from GitHub" can't reach the network for any
+reason, it falls back to that cached copy automatically instead of just
+failing, showing a banner with both the original error and how old the
+cached copy is. This means the installed app is genuinely usable offline —
+browsing and editing the last-synced logbook works with no connectivity;
+only syncing back to GitHub still needs it, which stays a visible,
+explicit requirement rather than a silent gap.

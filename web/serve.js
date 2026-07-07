@@ -16,6 +16,8 @@ const MIME_TYPES = {
   '.css': 'text/css',
   '.wasm': 'application/wasm',
   '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.png': 'image/png',
 };
 
 const server = http.createServer((req, res) => {

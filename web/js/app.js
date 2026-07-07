@@ -9,6 +9,19 @@ import { createExportDialog } from './dialogs/export-dialog.js';
 import { createFilterDialog } from './dialogs/filter-dialog.js';
 import { buildCsv } from './exporters/csv-export.js';
 import { getToken, setToken, getDataRepo, setDataRepo, fetchFile, putFile, textToBytes } from './github-storage.js';
+import { getCachedDb, setCachedDb } from './offline-cache.js';
+
+// PWA installability is a layered enhancement, not a hard dependency - a
+// failed registration is a silent console.warn, never routed through
+// showError, so the plain web page keeps working exactly as it does today
+// regardless of the outcome.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((err) => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
 
 const openPanel = el('open-panel');
 const app = el('app');
@@ -291,20 +304,38 @@ async function onLoadFromGithub() {
     const { bytes, sha } = await fetchFile('logbook.db');
     await loadDatabase(bytes.buffer);
     loadedDbSha = sha;
+    setCachedDb({ bytes, sha }).catch((err) => console.warn('Offline cache write failed:', err));
     refreshOwnerInfo();
     openPanel.hidden = true;
     app.hidden = false;
     goToPage(logbookApi.getLastPageNumber());
   } catch (err) {
-    showError(`Could not load from GitHub: ${err.message}`);
+    // Falls back on *any* fetch failure, not just a detected offline state -
+    // a bad token or wrong repo name still shows its real error text inside
+    // the fallback banner below, so it's never ambiguous why an older copy
+    // appeared instead of a dead end.
+    const cached = await getCachedDb().catch(() => undefined);
+    if (!cached) {
+      showError(`Could not load from GitHub: ${err.message}`);
+      return;
+    }
+    await loadDatabase(cached.bytes.buffer);
+    loadedDbSha = cached.sha;
+    refreshOwnerInfo();
+    openPanel.hidden = true;
+    app.hidden = false;
+    goToPage(logbookApi.getLastPageNumber());
+    showSuccess(`Couldn't reach GitHub (${err.message}). Opened the offline copy from ${new Date(cached.savedAt).toLocaleString()}.`);
   }
 }
 
 async function onSaveToGithub() {
   clearError();
   try {
-    loadedDbSha = await putFile('logbook.db', exportDatabase(), 'Update logbook.db', { expectedSha: loadedDbSha });
+    const bytes = exportDatabase();
+    loadedDbSha = await putFile('logbook.db', bytes, 'Update logbook.db', { expectedSha: loadedDbSha });
     await putFile('logbook.csv', textToBytes(buildCsv({})), 'Update logbook.csv');
+    setCachedDb({ bytes, sha: loadedDbSha }).catch((err) => console.warn('Offline cache write failed:', err));
     showSuccess('Saved to GitHub.');
   } catch (err) {
     showError(`Could not save to GitHub: ${err.message}`);
