@@ -18,6 +18,15 @@ body {
   margin: 0.5rem 0;
 }
 
+.success {
+  background: #e2f7e6;
+  border: 1px solid #2e7d32;
+  color: #1e5c24;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
 #page-nav {
   display: flex;
   justify-content: center;
@@ -437,6 +446,11 @@ dialog menu {
   }
   .hint {
     color: #999;
+  }
+  .success {
+    background: #1e3a22;
+    border-color: #4caf50;
+    color: #b6e6bb;
   }
   #page-table thead {
     background: #2a2a2a;

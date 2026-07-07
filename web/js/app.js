@@ -1,6 +1,6 @@
 import { el } from './dom.js';
 import { loadDatabase, exportDatabase, logbookApi } from './logbook-api.js';
-import { showError, clearError } from './error-banner.js';
+import { showError, showSuccess, clearError } from './error-banner.js';
 import { createPageView } from './views/page-view.js';
 import { createFlightDialog } from './dialogs/flight-dialog.js';
 import { createSimulatorDialog } from './dialogs/simulator-dialog.js';
@@ -182,6 +182,7 @@ async function onSaveToGithub() {
   try {
     loadedDbSha = await putFile('logbook.db', exportDatabase(), 'Update logbook.db', { expectedSha: loadedDbSha });
     await putFile('logbook.csv', textToBytes(buildCsv({})), 'Update logbook.csv');
+    showSuccess('Saved to GitHub.');
   } catch (err) {
     showError(`Could not save to GitHub: ${err.message}`);
   }
