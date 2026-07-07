@@ -233,7 +233,38 @@ function closeMainMenu() {
   btnOpenCreate.setAttribute('aria-expanded', 'false');
 }
 
+// Holding the menu button down for a full second jumps straight to Add
+// Flight - a shortcut for the single most common action, same idea as a
+// long-press app-icon shortcut on Android. pointerup/leave/cancel all clear
+// the pending timer, so anything short of holding past the threshold (a
+// normal tap, or pressing then dragging off the button) is unaffected. The
+// click event that still follows a long-press release is suppressed below
+// so it doesn't also toggle the menu open.
+const LONG_PRESS_MS = 1000;
+let longPressTimer = null;
+let longPressFired = false;
+
+btnMainMenu.addEventListener('pointerdown', () => {
+  longPressFired = false;
+  longPressTimer = setTimeout(() => {
+    longPressFired = true;
+    closeMainMenu();
+    flightDialog.open();
+  }, LONG_PRESS_MS);
+});
+
+function cancelLongPress() {
+  clearTimeout(longPressTimer);
+}
+btnMainMenu.addEventListener('pointerup', cancelLongPress);
+btnMainMenu.addEventListener('pointerleave', cancelLongPress);
+btnMainMenu.addEventListener('pointercancel', cancelLongPress);
+
 btnMainMenu.addEventListener('click', () => {
+  if (longPressFired) {
+    longPressFired = false;
+    return;
+  }
   const opening = mainMenu.hidden;
   if (opening) {
     mainMenu.hidden = false;
