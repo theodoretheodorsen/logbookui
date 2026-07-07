@@ -15,6 +15,7 @@ import {
   getPagesForExport as getPagesForExportRaw,
   listAirports as listAirportsRaw,
   listPicNames as listPicNamesRaw,
+  AIRCRAFT_FAMILIES,
 } from '../lib/export.js';
 
 const { addFlight, updateFlight, getFlight, getLastFlight } = createFlightsApi({ getDb, withTransaction });
@@ -57,7 +58,7 @@ function listPicNames() {
   return listPicNamesRaw(getDb());
 }
 
-export { loadDatabase, exportDatabase };
+export { loadDatabase, exportDatabase, AIRCRAFT_FAMILIES };
 
 export const logbookApi = {
   addFlight,

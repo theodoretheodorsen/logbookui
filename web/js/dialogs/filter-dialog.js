@@ -1,5 +1,5 @@
 import { el } from '../dom.js';
-import { logbookApi } from '../logbook-api.js';
+import { logbookApi, AIRCRAFT_FAMILIES } from '../logbook-api.js';
 import { clearError } from '../error-banner.js';
 import { restrictUppercase } from '../input-restrict.js';
 
@@ -46,6 +46,38 @@ export function createFilterDialog({ onApply, onClear }) {
     }
   }
 
+  // Families (A320 family, 737 family, ...) go in their own optgroup above
+  // the real types actually flown, so picking one filters every member type
+  // at once (see AIRCRAFT_FAMILIES/buildConditions in lib/export.js) without
+  // hiding the exact-type options a pilot might still want.
+  function populateTypeSelect(select, types) {
+    select.textContent = '';
+    const anyOption = document.createElement('option');
+    anyOption.value = '';
+    anyOption.textContent = 'Any type';
+    select.appendChild(anyOption);
+
+    const familyGroup = document.createElement('optgroup');
+    familyGroup.label = 'Families';
+    for (const family of Object.keys(AIRCRAFT_FAMILIES)) {
+      const option = document.createElement('option');
+      option.value = family;
+      option.textContent = family;
+      familyGroup.appendChild(option);
+    }
+    select.appendChild(familyGroup);
+
+    const typeGroup = document.createElement('optgroup');
+    typeGroup.label = 'Types';
+    for (const type of types) {
+      const option = document.createElement('option');
+      option.value = type;
+      option.textContent = type;
+      typeGroup.appendChild(option);
+    }
+    select.appendChild(typeGroup);
+  }
+
   function open() {
     clearError();
     form.reset();
@@ -57,7 +89,7 @@ export function createFilterDialog({ onApply, onClear }) {
       aircraft.map((a) => ({ value: a.registration, label: `${a.registration} (${a.type})` }))
     );
     const types = [...new Set(aircraft.map((a) => a.type))].sort();
-    populateSelect(typeSelect, 'Any type', types.map((type) => ({ value: type, label: type })));
+    populateTypeSelect(typeSelect, types);
 
     populateDatalist(picList, logbookApi.listPicNames());
     populateDatalist(airportList, logbookApi.listAirports());
