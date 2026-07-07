@@ -854,12 +854,12 @@ dialog form input[type='checkbox'] {
    a tie broken the wrong way) instead of silently falling back to the
    browser's ~177px default text-input width. */
 .field-row .time-input {
-  width: 3.2em;
+  width: 4.2em;
   text-align: center;
 }
 
 .field-row .icao-input {
-  width: 3.6em;
+  width: 4.6em;
   text-align: center;
   text-transform: uppercase;
 }
