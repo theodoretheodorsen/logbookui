@@ -2,6 +2,7 @@ import { el, populateDatalist } from '../dom.js';
 import { logbookApi, AIRCRAFT_FAMILIES } from '../logbook-api.js';
 import { clearError } from '../error-banner.js';
 import { restrictUppercase } from '../input-restrict.js';
+import { todayUtc, addDaysUtc, addMonthsUtc, startOfYearUtc } from '../date-utils.js';
 
 // `onApply(filters)` is called with `{ pic, registration, aircraftType, role,
 // kind, airport, from, to }` (only whichever fields were actually filled in)
@@ -21,6 +22,30 @@ export function createFilterDialog({ onApply, onClear }) {
   el('filter-clear').addEventListener('click', () => {
     dialog.close();
     onClear();
+  });
+
+  // Quick EASA FTL comparison ranges (ORO.FTL.210: 100h/28 days, 900h/
+  // calendar year, 1000h/12 months) - fills the From/To fields and applies
+  // immediately (same path as pressing Apply), so it's a one-tap "where do
+  // I stand against the limit" check rather than just prefilling the form.
+  // Any other filter already set (PIC, aircraft, ...) is left alone.
+  function applyQuickRange(from, to) {
+    el('filter-date-from').value = from;
+    el('filter-date-to').value = to;
+    form.requestSubmit();
+  }
+
+  el('filter-quick-28d').addEventListener('click', () => {
+    const to = todayUtc();
+    applyQuickRange(addDaysUtc(to, -27), to);
+  });
+  el('filter-quick-year').addEventListener('click', () => {
+    const to = todayUtc();
+    applyQuickRange(startOfYearUtc(to), to);
+  });
+  el('filter-quick-12m').addEventListener('click', () => {
+    const to = todayUtc();
+    applyQuickRange(addMonthsUtc(to, -12), to);
   });
 
   function populateSelect(select, defaultLabel, options) {

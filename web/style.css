@@ -888,7 +888,8 @@ dialog menu {
 }
 
 dialog menu button,
-#btn-clear-filter {
+#btn-clear-filter,
+.quick-range-btn {
   font: inherit;
   cursor: pointer;
   border-radius: 4px;
@@ -896,14 +897,16 @@ dialog menu button,
 }
 
 dialog menu button[type='button'],
-#btn-clear-filter {
+#btn-clear-filter,
+.quick-range-btn {
   background: transparent;
   border: 1px solid var(--gold-soft);
   color: var(--ink);
 }
 
 dialog menu button[type='button']:hover,
-#btn-clear-filter:hover {
+#btn-clear-filter:hover,
+.quick-range-btn:hover {
   border-color: var(--gold);
   background: var(--gold-faint);
 }
