@@ -208,15 +208,24 @@ body {
   background: var(--gold-hover);
 }
 
-/* Lives inside #nav-dialog now (see index.html) rather than always on
-   screen - swiping the card list turns pages day to day, this dialog is
-   just for jumping to a specific page or first/last. */
+/* Lives in #app-header, pinned to the right of the title - always visible
+   on wide screens, since there's no swipe-to-turn-page with a mouse. Below
+   the 700px breakpoint it's hidden by default and revealed by "Go to page"
+   in #main-menu instead (see the mobile media query near the end of this
+   file), since swiping the card list handles routine page-turning there. */
 #page-nav {
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-left: auto;
+}
+
+/* [hidden]'s default display:none has low specificity - the #page-nav rule
+   above would otherwise win and show it anyway (same gotcha as
+   #filter-banner[hidden]/#main-menu[hidden] elsewhere in this file). Used
+   while a filter is active, on both wide and narrow screens. */
+#page-nav[hidden] {
+  display: none;
 }
 
 .page-jump {
@@ -261,8 +270,8 @@ body {
   display: none;
 }
 
-/* Icon-only buttons (nav-dialog's page arrows) - bigger glyph and a
-   roughly-square tap target rather than a text button's padding. */
+/* Icon-only buttons (#page-nav's first/prev/next/last arrows) - bigger
+   glyph and a roughly-square tap target rather than a text button's padding. */
 .icon-btn {
   font-size: 1.3rem;
   line-height: 1;
@@ -358,6 +367,13 @@ body {
   font-size: 0.95rem;
   text-align: left;
   cursor: pointer;
+}
+
+/* Redundant on wide screens, where #page-nav is always visible in the
+   header instead - only shown below the 700px breakpoint (see the mobile
+   media query near the end of this file). */
+#btn-open-nav {
+  display: none;
 }
 
 .menu-item:first-child {
@@ -884,8 +900,28 @@ dialog menu button[type='submit']:hover {
     display: flex;
   }
 
-  #page-nav {
+  #app-header {
     flex-wrap: wrap;
+  }
+
+  /* Hidden by default (see the base #page-nav rule above) - "Go to page"
+     in #main-menu reveals it as its own full-width row below the title,
+     since swiping the card list handles routine page-turning here instead. */
+  #page-nav {
+    display: none;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  #page-nav.open {
+    display: flex;
+  }
+
+  #btn-open-nav {
+    display: flex;
   }
 
   dialog {

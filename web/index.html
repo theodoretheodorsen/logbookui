@@ -53,6 +53,17 @@
       </svg>
     </button>
     <h1 id="app-title">EASA Logbook</h1>
+    <nav id="page-nav">
+      <button type="button" id="btn-first" class="icon-btn" title="First page" aria-label="First page">&laquo;</button>
+      <button type="button" id="btn-prev" class="icon-btn" title="Previous page" aria-label="Previous page">&lsaquo;</button>
+      <span class="page-jump">
+        <input type="number" id="page-input" min="1" size="3" title="Go to page" aria-label="Go to page">
+        <span class="page-sep">/</span>
+        <span id="last-page">-</span>
+      </span>
+      <button type="button" id="btn-next" class="icon-btn" title="Next page" aria-label="Next page">&rsaquo;</button>
+      <button type="button" id="btn-last" class="icon-btn" title="Last page" aria-label="Last page">&raquo;</button>
+    </nav>
   </header>
 
   <div id="main-menu" hidden>
@@ -132,24 +143,6 @@
 
   <div id="page-card-list"></div>
 </section>
-
-<dialog id="nav-dialog">
-  <h2>Go to Page</h2>
-  <nav id="page-nav">
-    <button type="button" id="btn-first" class="icon-btn" title="First page" aria-label="First page">&laquo;</button>
-    <button type="button" id="btn-prev" class="icon-btn" title="Previous page" aria-label="Previous page">&lsaquo;</button>
-    <span class="page-jump">
-      <input type="number" id="page-input" min="1" size="3" title="Go to page" aria-label="Go to page">
-      <span class="page-sep">/</span>
-      <span id="last-page">-</span>
-    </span>
-    <button type="button" id="btn-next" class="icon-btn" title="Next page" aria-label="Next page">&rsaquo;</button>
-    <button type="button" id="btn-last" class="icon-btn" title="Last page" aria-label="Last page">&raquo;</button>
-  </nav>
-  <menu>
-    <button type="button" id="nav-dialog-close">Close</button>
-  </menu>
-</dialog>
 
 <dialog id="flight-dialog">
   <form id="flight-form">

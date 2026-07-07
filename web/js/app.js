@@ -25,7 +25,7 @@ const mainMenu = el('main-menu');
 const btnOpenCreate = el('btn-open-create');
 const createMenu = el('create-menu');
 const btnOpenNav = el('btn-open-nav');
-const navDialog = el('nav-dialog');
+const pageNav = el('page-nav');
 
 let currentPage = 1;
 // The sha of logbook.db as last loaded from or saved to GitHub, used to
@@ -71,6 +71,7 @@ function applyFilter(filters) {
     pageView.renderCards([...rows, { sort_order: 4, ...totals }]);
     filterCountEl.textContent = rows.length;
     btnOpenNav.hidden = true;
+    pageNav.hidden = true;
     filterBanner.hidden = false;
   } catch (err) {
     showError(err.message);
@@ -81,6 +82,7 @@ function clearFilter() {
   activeFilter = null;
   filterBanner.hidden = true;
   btnOpenNav.hidden = false;
+  pageNav.hidden = false;
   goToPage(currentPage);
 }
 
@@ -211,8 +213,10 @@ btnOpenCreate.addEventListener('click', () => {
   btnOpenCreate.setAttribute('aria-expanded', String(opening));
 });
 
-btnOpenNav.addEventListener('click', () => navDialog.showModal());
-el('nav-dialog-close').addEventListener('click', () => navDialog.close());
+// #page-nav is always visible in the header on wide screens (see style.css) -
+// this toggle only matters below the 700px breakpoint, where it's hidden
+// until "Go to page" reveals it, same reveal pattern as the main menu.
+btnOpenNav.addEventListener('click', () => pageNav.classList.toggle('open'));
 
 // Any menu action other than the Create toggle itself closes the whole
 // menu once it's done its own thing (open a dialog, apply a setting, etc).
@@ -223,9 +227,12 @@ mainMenu.addEventListener('click', (event) => {
 });
 
 document.addEventListener('click', (event) => {
-  if (mainMenu.hidden) return;
-  if (mainMenu.contains(event.target) || btnMainMenu.contains(event.target)) return;
-  closeMainMenu();
+  if (!mainMenu.hidden && !mainMenu.contains(event.target) && !btnMainMenu.contains(event.target)) {
+    closeMainMenu();
+  }
+  if (pageNav.classList.contains('open') && !pageNav.contains(event.target) && !btnOpenNav.contains(event.target)) {
+    pageNav.classList.remove('open');
+  }
 });
 
 el('edit-mode-toggle').addEventListener('change', (event) => {
