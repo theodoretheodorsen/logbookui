@@ -1,11 +1,13 @@
-// Loads/saves logbook.db and logbook.csv straight from/to the logbook-data
-// repo via the GitHub Contents API, so every save becomes a commit there.
-// The token is a fine-grained PAT (Contents: read/write, scoped to just that
-// one repo) the user creates themselves and pastes in - it lives only in
-// this browser's localStorage, never in source.
-import { GITHUB_OWNER, GITHUB_DATA_REPO } from './config.js';
-
+// Loads/saves logbook.db and logbook.csv straight from/to a data repo via
+// the GitHub Contents API, so every save becomes a commit there. Both the
+// repo ("owner/repo") and the token are entered on the cover, not hardcoded
+// here - this app isn't tied to any one person's data repo, so pointing it
+// at a different one later is just changing what's typed on the cover. The
+// token is a fine-grained PAT (Contents: read/write, scoped to just that one
+// repo); both values live only in this browser's localStorage, never in
+// source.
 const TOKEN_KEY = 'logbook.githubToken';
+const DATA_REPO_KEY = 'logbook.githubDataRepo';
 
 function getToken() {
   return localStorage.getItem(TOKEN_KEY) || '';
@@ -13,6 +15,14 @@ function getToken() {
 
 function setToken(token) {
   localStorage.setItem(TOKEN_KEY, token);
+}
+
+function getDataRepo() {
+  return localStorage.getItem(DATA_REPO_KEY) || '';
+}
+
+function setDataRepo(dataRepo) {
+  localStorage.setItem(DATA_REPO_KEY, dataRepo);
 }
 
 function bytesToBase64(bytes) {
@@ -33,7 +43,8 @@ function textToBytes(text) {
 }
 
 function contentsUrl(path) {
-  return `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_DATA_REPO}/contents/${path}`;
+  const [owner, repo] = getDataRepo().split('/');
+  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 }
 
 async function githubRequest(path, options) {
@@ -48,12 +59,12 @@ async function githubRequest(path, options) {
   return response;
 }
 
-// Returns `{ bytes, sha }` for the file at `path` in logbook-data, or throws
-// with a message suitable for showError.
+// Returns `{ bytes, sha }` for the file at `path` in the configured data
+// repo, or throws with a message suitable for showError.
 async function fetchFile(path) {
   const response = await githubRequest(path);
   if (!response.ok) {
-    if (response.status === 404) throw new Error(`${path} not found in ${GITHUB_DATA_REPO}`);
+    if (response.status === 404) throw new Error(`${path} not found in ${getDataRepo()}`);
     if (response.status === 401) throw new Error('GitHub token missing or invalid');
     throw new Error(`GitHub load failed (${response.status})`);
   }
@@ -61,8 +72,8 @@ async function fetchFile(path) {
   return { bytes: base64ToBytes(body.content), sha: body.sha };
 }
 
-// Writes `bytes` to `path` in logbook-data as a new commit with message
-// `message`. Always fetches the current sha immediately before writing
+// Writes `bytes` to `path` in the configured data repo as a new commit with
+// message `message`. Always fetches the current sha immediately before writing
 // (rather than caching one across the session), so this works whether the
 // file was just loaded from GitHub or is being created for the first time.
 //
@@ -101,4 +112,4 @@ async function putFile(path, bytes, message, { expectedSha } = {}) {
   return (await response.json()).content.sha;
 }
 
-export { getToken, setToken, fetchFile, putFile, textToBytes };
+export { getToken, setToken, getDataRepo, setDataRepo, fetchFile, putFile, textToBytes };

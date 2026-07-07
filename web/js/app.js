@@ -8,10 +8,11 @@ import { createRemarkDialog } from './dialogs/remark-dialog.js';
 import { createExportDialog } from './dialogs/export-dialog.js';
 import { createFilterDialog } from './dialogs/filter-dialog.js';
 import { buildCsv } from './exporters/csv-export.js';
-import { getToken, setToken, fetchFile, putFile, textToBytes } from './github-storage.js';
+import { getToken, setToken, getDataRepo, setDataRepo, fetchFile, putFile, textToBytes } from './github-storage.js';
 
 const openPanel = el('open-panel');
 const app = el('app');
+const githubRepoInput = el('github-repo-input');
 const githubTokenInput = el('github-token-input');
 const githubOpenBox = el('github-open');
 const btnOpenGithub = el('btn-open-github');
@@ -160,6 +161,7 @@ const filterDialog = createFilterDialog({ onApply: applyFilter, onClear: clearFi
 
 setupSwipeNavigation(el('page-card-list'));
 
+githubRepoInput.value = getDataRepo();
 githubTokenInput.value = getToken();
 fileInput.addEventListener('change', onFileChosen);
 btnOpenGithub.addEventListener('click', () => {
@@ -255,6 +257,12 @@ async function onFileChosen(event) {
 
 async function onLoadFromGithub() {
   clearError();
+  const dataRepo = githubRepoInput.value.trim();
+  if (!/^[^/\s]+\/[^/\s]+$/.test(dataRepo)) {
+    showError('Data repository must look like owner/repo.');
+    return;
+  }
+  setDataRepo(dataRepo);
   setToken(githubTokenInput.value);
   try {
     const { bytes, sha } = await fetchFile('logbook.db');
