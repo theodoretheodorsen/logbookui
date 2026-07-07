@@ -43,37 +43,59 @@
 </section>
 
 <section id="app" hidden>
-  <nav id="page-nav">
-    <button type="button" id="btn-first" class="icon-btn" title="First page" aria-label="First page">&laquo;</button>
-    <button type="button" id="btn-prev" class="icon-btn" title="Previous page" aria-label="Previous page">&lsaquo;</button>
-    <span class="page-jump">
-      <input type="number" id="page-input" min="1" size="3" title="Go to page" aria-label="Go to page">
-      <span class="page-sep">/</span>
-      <span id="last-page">-</span>
-    </span>
-    <button type="button" id="btn-next" class="icon-btn" title="Next page" aria-label="Next page">&rsaquo;</button>
-    <button type="button" id="btn-last" class="icon-btn" title="Last page" aria-label="Last page">&raquo;</button>
-    <button type="button" id="btn-toggle-toolbar" class="icon-btn plus-btn" title="Add..." aria-label="Show add actions">+</button>
-  </nav>
+  <header id="app-header">
+    <button type="button" id="btn-main-menu" class="menu-toggle-btn" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu" title="Menu" aria-label="Open menu">
+      <svg viewBox="0 0 48 32" width="26" height="18" aria-hidden="true">
+        <path d="M4,8 L38,8 L44,16 L38,24 L4,24 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+        <rect x="16" y="9" width="3" height="14" fill="currentColor"/>
+        <rect x="22" y="9" width="3" height="14" fill="currentColor"/>
+        <rect x="28" y="9" width="3" height="14" fill="currentColor"/>
+      </svg>
+    </button>
+    <h1 id="app-title">EASA Logbook</h1>
+  </header>
 
-  <div id="filter-banner" hidden>
-    Showing <span id="filter-count">0</span> matching <button type="button" id="btn-clear-filter">Clear filter</button>
-  </div>
+  <div id="main-menu" hidden>
+    <button type="button" id="btn-open-create" class="menu-item" aria-haspopup="true" aria-expanded="false" aria-controls="create-menu">
+      <span class="menu-item-icon" aria-hidden="true">+</span> Create
+    </button>
+    <div id="create-menu" hidden>
+      <button type="button" id="btn-add-flight" class="menu-item menu-subitem">
+        <span class="menu-item-icon" aria-hidden="true">&#9992;&#65039;</span> Flight
+      </button>
+      <button type="button" id="btn-add-sim" class="menu-item menu-subitem">
+        <span class="menu-item-icon" aria-hidden="true">&#128421;&#65039;</span> Simulator session
+      </button>
+      <button type="button" id="btn-add-remark" class="menu-item menu-subitem">
+        <span class="menu-item-icon" aria-hidden="true">&#128221;</span> Remark
+      </button>
+    </div>
 
-  <div id="toolbar" hidden>
-    <button type="button" id="btn-add-flight" class="icon-btn" title="Add Flight" aria-label="Add Flight">&#9992;&#65039;</button>
-    <button type="button" id="btn-add-sim" class="icon-btn" title="Add Simulator Session" aria-label="Add Simulator Session">&#128421;&#65039;</button>
-    <button type="button" id="btn-add-remark" class="icon-btn" title="Add Remark" aria-label="Add Remark">&#128221;</button>
-    <button type="button" id="btn-export" class="icon-btn" title="Export" aria-label="Export">&#128424;&#65039;</button>
-    <button type="button" id="btn-filter" class="icon-btn" title="Filter" aria-label="Filter">&#128269;</button>
-    <button type="button" id="btn-save-github" class="icon-btn" title="Save to GitHub" aria-label="Save to GitHub">&#128190;</button>
-    <span class="edit-mode-control">
+    <button type="button" id="btn-open-nav" class="menu-item">
+      <span class="menu-item-icon" aria-hidden="true">&#128506;&#65039;</span> Go to page
+    </button>
+    <button type="button" id="btn-filter" class="menu-item">
+      <span class="menu-item-icon" aria-hidden="true">&#128269;</span> Filter
+    </button>
+    <button type="button" id="btn-export" class="menu-item">
+      <span class="menu-item-icon" aria-hidden="true">&#128424;&#65039;</span> Export
+    </button>
+    <button type="button" id="btn-save-github" class="menu-item">
+      <span class="menu-item-icon" aria-hidden="true">&#128190;</span> Save to GitHub
+    </button>
+
+    <div class="edit-mode-control">
       <span class="tool-icon" aria-hidden="true" title="Allow editing and deleting">&#128295;</span>
       <label class="switch">
         <input type="checkbox" id="edit-mode-toggle" aria-label="Allow editing and deleting entries">
         <span class="slider"></span>
       </label>
-    </span>
+      <span class="edit-mode-label">Allow editing</span>
+    </div>
+  </div>
+
+  <div id="filter-banner" hidden>
+    Showing <span id="filter-count">0</span> matching <button type="button" id="btn-clear-filter">Clear filter</button>
   </div>
 
   <div id="page-table-wrap">
@@ -110,6 +132,24 @@
 
   <div id="page-card-list"></div>
 </section>
+
+<dialog id="nav-dialog">
+  <h2>Go to Page</h2>
+  <nav id="page-nav">
+    <button type="button" id="btn-first" class="icon-btn" title="First page" aria-label="First page">&laquo;</button>
+    <button type="button" id="btn-prev" class="icon-btn" title="Previous page" aria-label="Previous page">&lsaquo;</button>
+    <span class="page-jump">
+      <input type="number" id="page-input" min="1" size="3" title="Go to page" aria-label="Go to page">
+      <span class="page-sep">/</span>
+      <span id="last-page">-</span>
+    </span>
+    <button type="button" id="btn-next" class="icon-btn" title="Next page" aria-label="Next page">&rsaquo;</button>
+    <button type="button" id="btn-last" class="icon-btn" title="Last page" aria-label="Last page">&raquo;</button>
+  </nav>
+  <menu>
+    <button type="button" id="nav-dialog-close">Close</button>
+  </menu>
+</dialog>
 
 <dialog id="flight-dialog">
   <form id="flight-form">

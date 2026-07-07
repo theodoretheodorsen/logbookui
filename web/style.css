@@ -74,7 +74,7 @@ body {
 
 /* [hidden]'s default display:none has low specificity - the #open-panel
    rule above would otherwise win and show it anyway (same gotcha as
-   #page-nav[hidden]/#filter-banner[hidden]/#toolbar[hidden] below). */
+   #filter-banner[hidden]/#main-menu[hidden] below). */
 #open-panel[hidden] {
   display: none;
 }
@@ -208,19 +208,15 @@ body {
   background: var(--gold-hover);
 }
 
+/* Lives inside #nav-dialog now (see index.html) rather than always on
+   screen - swiping the card list turns pages day to day, this dialog is
+   just for jumping to a specific page or first/last. */
 #page-nav {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
-}
-
-/* [hidden]'s default display:none has low specificity - an ID selector like
-   #page-nav above wins over it even more easily than a class would (same
-   recurring gotcha as #toolbar[hidden]/#filter-banner[hidden] etc.). */
-#page-nav[hidden] {
-  display: none;
 }
 
 .page-jump {
@@ -260,28 +256,13 @@ body {
 
 /* [hidden]'s default display:none has low specificity - the #filter-banner
    rule above would otherwise win and show it anyway (same gotcha as
-   #toolbar[hidden] below, .card-details[hidden], dialog form label[hidden]). */
+   #main-menu[hidden] below, .card-details[hidden], dialog form label[hidden]). */
 #filter-banner[hidden] {
   display: none;
 }
 
-#toolbar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-/* [hidden]'s default display:none has low specificity - the #toolbar rule
-   above would otherwise win and show it anyway (same gotcha as
-   .card-details[hidden] and dialog form label[hidden]). */
-#toolbar[hidden] {
-  display: none;
-}
-
-/* Icon-only buttons (page nav arrows, toolbar actions) - bigger glyph and
-   a roughly-square tap target rather than a text button's padding. */
+/* Icon-only buttons (nav-dialog's page arrows) - bigger glyph and a
+   roughly-square tap target rather than a text button's padding. */
 .icon-btn {
   font-size: 1.3rem;
   line-height: 1;
@@ -299,26 +280,132 @@ body {
   background: var(--gold-faint);
 }
 
-/* Rotates the toolbar's "+" toggle into a "x" while the toolbar is open -
-   same rotate-on-expand language as the card chevrons. */
-.plus-btn {
-  transition: transform 0.15s ease;
+/* App header: the one thing always on screen once a logbook is open - a
+   title and the single menu button everything else (create/navigate/
+   filter/export/save/edit-mode) lives behind. See #main-menu below. */
+#app-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
-.plus-btn.expanded {
-  transform: rotate(45deg);
+#app-title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy-2);
 }
 
-/* Edit-mode toggle (wrench icon + sliding switch), inside the hidden
-   toolbar - gates Edit/Delete and the Add-dialogs' Position field behind an
-   explicit opt-in, since both can restructure/renumber the whole logbook. */
+.menu-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--gold-soft);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.menu-toggle-btn:hover {
+  border-color: var(--gold);
+  background: var(--gold-faint);
+}
+
+/* Active/open state - same gold-fill language as a pressed toggle. */
+.menu-toggle-btn.expanded {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+#main-menu {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+  background: var(--paper-white);
+  overflow: hidden;
+}
+
+/* [hidden]'s default display:none has low specificity - the #main-menu
+   rule above would otherwise win and show it anyway (same recurring gotcha
+   as #filter-banner[hidden] above). */
+#main-menu[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-top: 1px solid var(--paper-border);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:first-child {
+  border-top: none;
+}
+
+.menu-item:hover {
+  background: var(--gold-faint);
+}
+
+.menu-item-icon {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Nested one level for the three "add" actions behind Create - same
+   paper-grey used elsewhere to mark a distinct sub-section. */
+#create-menu {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-grey);
+}
+
+#create-menu[hidden] {
+  display: none;
+}
+
+.menu-subitem {
+  padding-left: 2.4rem;
+  font-size: 0.9rem;
+}
+
+/* Edit-mode toggle (wrench icon + sliding switch) - gates Edit/Delete and
+   the Add-dialogs' Position field behind an explicit opt-in, since both can
+   restructure/renumber the whole logbook. Last item in #main-menu. */
 .edit-mode-control {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin-left: 0.5rem;
-  padding-left: 0.75rem;
-  border-left: 1px solid var(--gold-soft);
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--paper-border);
+}
+
+.edit-mode-label {
+  font-size: 0.95rem;
+  color: var(--ink);
 }
 
 .tool-icon {
@@ -495,7 +582,9 @@ tr.totals-row {
 .summary-plain {
   flex: 1;
   min-width: 0;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--ink-dim);
 }
 
 .summary-text {
@@ -795,8 +884,7 @@ dialog menu button[type='submit']:hover {
     display: flex;
   }
 
-  #page-nav,
-  #toolbar {
+  #page-nav {
     flex-wrap: wrap;
   }
 

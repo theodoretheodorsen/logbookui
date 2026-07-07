@@ -18,11 +18,14 @@ const btnOpenGithub = el('btn-open-github');
 const fileInput = el('file-input');
 const pageInput = el('page-input');
 const lastPageEl = el('last-page');
-const toolbar = el('toolbar');
-const toggleToolbarBtn = el('btn-toggle-toolbar');
-const pageNav = el('page-nav');
 const filterBanner = el('filter-banner');
 const filterCountEl = el('filter-count');
+const btnMainMenu = el('btn-main-menu');
+const mainMenu = el('main-menu');
+const btnOpenCreate = el('btn-open-create');
+const createMenu = el('create-menu');
+const btnOpenNav = el('btn-open-nav');
+const navDialog = el('nav-dialog');
 
 let currentPage = 1;
 // The sha of logbook.db as last loaded from or saved to GitHub, used to
@@ -67,7 +70,7 @@ function applyFilter(filters) {
     pageView.renderTable([...rows, { sort_order: 4, ...totals }]);
     pageView.renderCards([...rows, { sort_order: 4, ...totals }]);
     filterCountEl.textContent = rows.length;
-    pageNav.hidden = true;
+    btnOpenNav.hidden = true;
     filterBanner.hidden = false;
   } catch (err) {
     showError(err.message);
@@ -77,7 +80,7 @@ function applyFilter(filters) {
 function clearFilter() {
   activeFilter = null;
   filterBanner.hidden = true;
-  pageNav.hidden = false;
+  btnOpenNav.hidden = false;
   goToPage(currentPage);
 }
 
@@ -180,9 +183,49 @@ el('btn-export').addEventListener('click', () => exportDialog.open(activeFilter)
 el('btn-filter').addEventListener('click', () => filterDialog.open());
 el('btn-clear-filter').addEventListener('click', clearFilter);
 
-toggleToolbarBtn.addEventListener('click', () => {
-  toolbar.hidden = !toolbar.hidden;
-  toggleToolbarBtn.classList.toggle('expanded', !toolbar.hidden);
+// Everything except page-turning (now swipe-driven) and the always-visible
+// filter banner lives behind this one menu button, styled after the cover's
+// epaulette. create-menu nests one level deeper for the three "add" actions.
+function closeMainMenu() {
+  mainMenu.hidden = true;
+  btnMainMenu.setAttribute('aria-expanded', 'false');
+  btnMainMenu.classList.remove('expanded');
+  createMenu.hidden = true;
+  btnOpenCreate.setAttribute('aria-expanded', 'false');
+}
+
+btnMainMenu.addEventListener('click', () => {
+  const opening = mainMenu.hidden;
+  if (opening) {
+    mainMenu.hidden = false;
+    btnMainMenu.setAttribute('aria-expanded', 'true');
+    btnMainMenu.classList.add('expanded');
+  } else {
+    closeMainMenu();
+  }
+});
+
+btnOpenCreate.addEventListener('click', () => {
+  const opening = createMenu.hidden;
+  createMenu.hidden = !opening;
+  btnOpenCreate.setAttribute('aria-expanded', String(opening));
+});
+
+btnOpenNav.addEventListener('click', () => navDialog.showModal());
+el('nav-dialog-close').addEventListener('click', () => navDialog.close());
+
+// Any menu action other than the Create toggle itself closes the whole
+// menu once it's done its own thing (open a dialog, apply a setting, etc).
+mainMenu.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button || button === btnOpenCreate) return;
+  closeMainMenu();
+});
+
+document.addEventListener('click', (event) => {
+  if (mainMenu.hidden) return;
+  if (mainMenu.contains(event.target) || btnMainMenu.contains(event.target)) return;
+  closeMainMenu();
 });
 
 el('edit-mode-toggle').addEventListener('change', (event) => {
