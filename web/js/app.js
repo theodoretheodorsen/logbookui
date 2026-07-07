@@ -13,6 +13,9 @@ import { getToken, setToken, fetchFile, putFile, textToBytes } from './github-st
 const openPanel = el('open-panel');
 const app = el('app');
 const githubTokenInput = el('github-token-input');
+const githubOpenBox = el('github-open');
+const btnOpenGithub = el('btn-open-github');
+const fileInput = el('file-input');
 const pageInput = el('page-input');
 const lastPageEl = el('last-page');
 const toolbar = el('toolbar');
@@ -121,7 +124,13 @@ const exportDialog = createExportDialog();
 const filterDialog = createFilterDialog({ onApply: applyFilter, onClear: clearFilter });
 
 githubTokenInput.value = getToken();
-el('file-input').addEventListener('change', onFileChosen);
+fileInput.addEventListener('change', onFileChosen);
+btnOpenGithub.addEventListener('click', () => {
+  githubOpenBox.hidden = !githubOpenBox.hidden;
+  btnOpenGithub.setAttribute('aria-expanded', String(!githubOpenBox.hidden));
+  if (!githubOpenBox.hidden) githubTokenInput.focus();
+});
+el('btn-open-file').addEventListener('click', () => fileInput.click());
 el('btn-load-github').addEventListener('click', onLoadFromGithub);
 el('btn-save-github').addEventListener('click', onSaveToGithub);
 el('btn-first').addEventListener('click', () => goToPage(1));

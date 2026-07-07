@@ -4,7 +4,7 @@
 
 // sort_order 4 is a synthetic row (not from logbook_page_report) built by
 // app.js's applyFilter() for the filtered-results view's single total row.
-const TOTALS_LABELS = { 1: 'Page total', 2: 'Brought forward', 3: 'Running total', 4: 'Filter total' };
+const TOTALS_LABELS = { 1: 'Page total', 2: 'Previous page total', 3: 'Running total', 4: 'Filter total' };
 
 // Shared by the table (desktop) and card (mobile) renderers, in table-header
 // order - also reused by the exporters (csv-export.js/print-export.js) so
@@ -24,7 +24,7 @@ export const COLUMNS = [
   { key: 'total_time', label: 'Total' },
   { key: 'ifr_time', label: 'IFR' },
   { key: 'pic_time', label: 'PIC' },
-  { key: 'sic_time', label: 'SIC' },
+  { key: 'cop_time', label: 'COP' },
   { key: 'dual_time', label: 'DUAL' },
   { key: 'day_landings', label: 'Day Ldg' },
   { key: 'night_landings', label: 'Night Ldg' },
@@ -42,6 +42,23 @@ const SUMMARY_KEYS = {
   totals: ['total_time'],
 };
 
+// Card-view only: registration/type fold into one "ACFT" line, and total
+// time folds into one "BLOCK" line tagged with whichever of these categories
+// match the block time exactly (see addFlightSummaryFields below). A
+// category that *doesn't* match (e.g. partial IFR) is shown as its own field
+// instead, same as before.
+const TIME_TAG_COLUMNS = [
+  { key: 'multipilot_time', label: 'MP' },
+  { key: 'se_time', label: 'SE' },
+  { key: 'me_time', label: 'ME' },
+  { key: 'ifr_time', label: 'IFR' },
+  { key: 'pic_time', label: 'PIC' },
+  { key: 'cop_time', label: 'COP' },
+  { key: 'dual_time', label: 'DUAL' },
+];
+
+const FLIGHT_FOLDED_KEYS = ['registration', 'type', 'total_time', ...TIME_TAG_COLUMNS.map((c) => c.key)];
+
 function rowKind(row) {
   if (row.fstd_type != null) return 'simulator';
   if (row.registration != null || row.departure != null) return 'flight';
@@ -56,6 +73,40 @@ function td(text) {
   const cell = document.createElement('td');
   cell.textContent = text ?? '';
   return cell;
+}
+
+function addCardField(container, label, value) {
+  const field = document.createElement('div');
+  field.className = 'card-field';
+  field.innerHTML = `<span class="card-field-label"></span><span class="card-field-value"></span>`;
+  field.querySelector('.card-field-label').textContent = label;
+  field.querySelector('.card-field-value').textContent = value;
+  container.appendChild(field);
+}
+
+// ACFT: "EC-NFI (A32N)". BLOCK: total time, tagged with whichever role/rule
+// categories match it exactly - e.g. "1:14 (MP, IFR, COP)" - since those
+// almost always span the whole flight. A category logged for only part of
+// the flight (e.g. IFR flown partway) doesn't match the total, so it's
+// listed as its own field instead of folded into the tag list.
+function addFlightSummaryFields(container, row) {
+  if (row.registration != null) {
+    addCardField(container, 'ACFT', row.type ? `${row.registration} (${row.type})` : row.registration);
+  }
+
+  if (row.total_time == null || row.total_time === '') return;
+
+  const tags = [];
+  const partial = [];
+  for (const { key, label } of TIME_TAG_COLUMNS) {
+    const value = row[key];
+    if (value == null || value === '') continue;
+    if (value === row.total_time) tags.push(label);
+    else partial.push({ label, value });
+  }
+
+  addCardField(container, 'BLOCK', tags.length ? `${row.total_time} (${tags.join(', ')})` : row.total_time);
+  for (const { label, value } of partial) addCardField(container, label, value);
 }
 
 // Compact "card" summary for narrow/mobile screens: date + off-block/on-block
@@ -151,17 +202,15 @@ export function createPageView({ tableBody, cardList, onEdit, onDeleteEntry }) {
       details.className = 'card-details';
       details.hidden = true;
 
+      if (kind === 'flight') addFlightSummaryFields(details, row);
+
       const skip = SUMMARY_KEYS[kind] ?? [];
       for (const column of COLUMNS) {
         if (skip.includes(column.key)) continue;
+        if (kind === 'flight' && FLIGHT_FOLDED_KEYS.includes(column.key)) continue;
         const value = row[column.key];
         if (value == null || value === '') continue;
-        const field = document.createElement('div');
-        field.className = 'card-field';
-        field.innerHTML = `<span class="card-field-label"></span><span class="card-field-value"></span>`;
-        field.querySelector('.card-field-label').textContent = column.label;
-        field.querySelector('.card-field-value').textContent = value;
-        details.appendChild(field);
+        addCardField(details, column.label, value);
       }
 
       if (isEntry) {

@@ -10,16 +10,36 @@
 <div id="error-box" class="error" hidden></div>
 
 <section id="open-panel">
-  <div id="github-open">
-    <label>GitHub token: <input type="password" id="github-token-input" autocomplete="off"></label>
-    <button type="button" id="btn-load-github">Load from GitHub</button>
-    <p class="hint">Loads logbook.db from the private logbook-data repo. The token is a
-      fine-grained GitHub PAT (Contents: read/write, scoped to just that repo) - it's kept only
-      in this browser via localStorage, never sent anywhere but api.github.com.</p>
+  <div id="cover">
+    <p id="cover-emblem" aria-hidden="true">
+      <svg viewBox="0 0 48 32" width="44" height="30">
+        <path d="M4,8 L38,8 L44,16 L38,24 L4,24 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <rect x="16" y="9" width="3" height="14" fill="currentColor"/>
+        <rect x="22" y="9" width="3" height="14" fill="currentColor"/>
+        <rect x="28" y="9" width="3" height="14" fill="currentColor"/>
+      </svg>
+    </p>
+    <h1 id="cover-title">EASA FCL-Compliant Pilot Log</h1>
+    <p id="cover-subtitle">Digital Edition</p>
+
+    <div id="cover-actions">
+      <button type="button" id="btn-open-github" class="cover-icon-btn" title="Open from GitHub"
+        aria-label="Open from GitHub" aria-expanded="false" aria-controls="github-open">
+        <svg viewBox="0 0 16 16" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      </button>
+      <button type="button" id="btn-open-file" class="cover-icon-btn" title="Open local file" aria-label="Open local file">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm8 1.5V8h4.5L14 3.5z"/></svg>
+      </button>
+    </div>
+
+    <div class="cover-option" id="github-open" hidden>
+      <label for="github-token-input">GitHub token</label>
+      <input type="password" id="github-token-input" autocomplete="off" placeholder="Fine-grained PAT">
+      <button type="button" id="btn-load-github">Open Logbook</button>
+    </div>
+
+    <input type="file" id="file-input" accept=".db" hidden>
   </div>
-  <label>...or open a local file: <input type="file" id="file-input" accept=".db"></label>
-  <p class="hint">Edits only live in this browser tab until you save (to GitHub, or nothing is
-    written back for a locally-opened file until you do).</p>
 </section>
 
 <section id="app" hidden>
@@ -74,7 +94,7 @@
           <th>Total</th>
           <th>IFR</th>
           <th>PIC</th>
-          <th>SIC</th>
+          <th>COP</th>
           <th>DUAL</th>
           <th>Day Ldg</th>
           <th>Night Ldg</th>
@@ -149,7 +169,7 @@
       <label>Role
         <select id="flight-role" required>
           <option value="PIC">PIC</option>
-          <option value="SIC" selected>SIC</option>
+          <option value="COP" selected>COP</option>
           <option value="DUAL">DUAL</option>
         </select>
       </label>
@@ -294,7 +314,7 @@
         <select id="filter-role-select">
           <option value="">Any role</option>
           <option value="PIC">PIC</option>
-          <option value="SIC">SIC</option>
+          <option value="COP">COP</option>
           <option value="DUAL">DUAL</option>
         </select>
       </label>

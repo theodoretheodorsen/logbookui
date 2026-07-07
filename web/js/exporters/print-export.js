@@ -1,7 +1,7 @@
 import { logbookApi } from '../logbook-api.js';
 import { COLUMNS } from '../views/page-view.js';
 
-const TOTALS_LABELS = { 1: 'Page total', 2: 'Brought forward', 3: 'Running total' };
+const TOTALS_LABELS = { 1: 'Page total', 2: 'Previous page total', 3: 'Running total' };
 
 const PRINT_STYLES = `
   @page { size: landscape; margin: 1cm; }
