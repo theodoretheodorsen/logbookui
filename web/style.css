@@ -377,8 +377,32 @@ body {
   display: none;
 }
 
-.menu-item:first-child {
+/* #menu-owner-info (shown/hidden via JS, see app.js's refreshOwnerInfo) is
+   the actual first child of #main-menu now, so :first-child alone no longer
+   reaches #btn-open-create - this adjacent-sibling selector still matches
+   it regardless of whether the owner-info block itself is hidden, since
+   [hidden] doesn't remove an element from the sibling chain. */
+#menu-owner-info + .menu-item {
   border-top: none;
+}
+
+/* Pilot name/licence, from the owner table (lib/owner.js) - hidden
+   entirely for a logbook.db with no owner row. */
+#menu-owner-info {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--paper-border);
+  background: var(--paper-grey);
+}
+
+#menu-owner-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+#menu-owner-license {
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  color: var(--ink-dim);
 }
 
 .menu-item:hover {

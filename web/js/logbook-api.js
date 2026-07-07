@@ -9,6 +9,7 @@ import { createSimulatorApi, listFstdTypes as listFstdTypesRaw } from '../lib/si
 import { createRemarksApi } from '../lib/remarks.js';
 import { deleteEntryAt } from '../lib/entries.js';
 import { createPagesApi } from '../lib/pages.js';
+import { getOwner as getOwnerRaw } from '../lib/owner.js';
 import {
   getEntriesForExport as getEntriesForExportRaw,
   getExportTotals as getExportTotalsRaw,
@@ -58,6 +59,10 @@ function listPicNames() {
   return listPicNamesRaw(getDb());
 }
 
+function getOwner() {
+  return getOwnerRaw(getDb());
+}
+
 export { loadDatabase, exportDatabase, AIRCRAFT_FAMILIES };
 
 export const logbookApi = {
@@ -81,4 +86,5 @@ export const logbookApi = {
   getPagesForExport,
   listAirports,
   listPicNames,
+  getOwner,
 };

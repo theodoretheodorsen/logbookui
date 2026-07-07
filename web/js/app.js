@@ -27,6 +27,10 @@ const btnOpenCreate = el('btn-open-create');
 const createMenu = el('create-menu');
 const btnOpenNav = el('btn-open-nav');
 const pageNav = el('page-nav');
+const appTitle = el('app-title');
+const menuOwnerInfo = el('menu-owner-info');
+const menuOwnerName = el('menu-owner-name');
+const menuOwnerLicense = el('menu-owner-license');
 
 let currentPage = 1;
 // The sha of logbook.db as last loaded from or saved to GitHub, used to
@@ -41,6 +45,24 @@ let activeFilter = null;
 
 function pageForPosition(position) {
   return Math.floor((position - 1) / 10) + 1;
+}
+
+// Reads the owner table (if any - see lib/owner.js) right after a database
+// loads, to personalize the header title and show the pilot's name/licence
+// in the main menu. Falls back to a generic title and hides the menu block
+// entirely for a logbook.db with no owner row (predates the table, or one
+// nobody's filled in yet).
+function refreshOwnerInfo() {
+  const owner = logbookApi.getOwner();
+  if (owner?.first_name) {
+    appTitle.textContent = `Pilot ${owner.first_name} Log`;
+    menuOwnerName.textContent = [owner.first_name, owner.family_name].filter(Boolean).join(' ');
+    menuOwnerLicense.textContent = owner.license_number ?? '';
+    menuOwnerInfo.hidden = false;
+  } else {
+    appTitle.textContent = 'EASA Logbook';
+    menuOwnerInfo.hidden = true;
+  }
 }
 
 function goToPage(pageNumber) {
@@ -247,6 +269,7 @@ async function onFileChosen(event) {
   try {
     const buffer = await file.arrayBuffer();
     await loadDatabase(buffer);
+    refreshOwnerInfo();
     openPanel.hidden = true;
     app.hidden = false;
     goToPage(logbookApi.getLastPageNumber());
@@ -268,6 +291,7 @@ async function onLoadFromGithub() {
     const { bytes, sha } = await fetchFile('logbook.db');
     await loadDatabase(bytes.buffer);
     loadedDbSha = sha;
+    refreshOwnerInfo();
     openPanel.hidden = true;
     app.hidden = false;
     goToPage(logbookApi.getLastPageNumber());
