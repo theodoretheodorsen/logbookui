@@ -2,7 +2,15 @@ import { el, populateDatalist } from '../dom.js';
 import { logbookApi, AIRCRAFT_FAMILIES } from '../logbook-api.js';
 import { clearError } from '../error-banner.js';
 import { restrictUppercase } from '../input-restrict.js';
-import { todayUtc, addDaysUtc, addMonthsUtc, startOfYearUtc } from '../date-utils.js';
+import {
+  todayUtc,
+  addDaysUtc,
+  addMonthsUtc,
+  startOfYearUtc,
+  monthsAgoUtc,
+  endOfMonthUtc,
+  monthLabelUtc,
+} from '../date-utils.js';
 
 // `onApply(filters)` is called with `{ pic, registration, aircraftType, role,
 // kind, airport, from, to }` (only whichever fields were actually filled in)
@@ -47,6 +55,28 @@ export function createFilterDialog({ onApply, onClear }) {
     const to = todayUtc();
     applyQuickRange(addMonthsUtc(to, -12), to);
   });
+
+  // "July 2026"/"June 2026"/"May 2026" style quick filters for the current
+  // and two preceding calendar months. Recomputed on every open() (rather
+  // than wired once like the EASA buttons above) since both the label and
+  // the date range depend on today's date, and this dialog can be left
+  // open across a month boundary. Uses .onclick (not addEventListener) so
+  // re-running this on each open() replaces the previous handler instead
+  // of stacking a duplicate one.
+  const MONTH_QUICK_BUTTON_IDS = ['filter-quick-month-0', 'filter-quick-month-1', 'filter-quick-month-2'];
+
+  function populateMonthQuickButtons() {
+    const today = todayUtc();
+    MONTH_QUICK_BUTTON_IDS.forEach((id, monthsAgo) => {
+      const button = el(id);
+      const monthStart = monthsAgoUtc(today, monthsAgo);
+      button.textContent = monthLabelUtc(monthStart);
+      button.onclick = () => {
+        const to = monthsAgo === 0 ? today : endOfMonthUtc(monthStart);
+        applyQuickRange(monthStart, to);
+      };
+    });
+  }
 
   function populateSelect(select, defaultLabel, options) {
     select.textContent = '';
@@ -97,6 +127,7 @@ export function createFilterDialog({ onApply, onClear }) {
   function open() {
     clearError();
     form.reset();
+    populateMonthQuickButtons();
 
     const aircraft = logbookApi.listAircraft();
     populateSelect(
