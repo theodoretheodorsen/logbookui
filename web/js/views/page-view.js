@@ -1,6 +1,7 @@
 // Renders one logbook page (rows from logbookApi.getPage) as both the
 // desktop table and the mobile card list - see style.css for which one is
 // actually visible at a given viewport width.
+import { detectAirline, renderAirlineBadge } from '../airline-badge.js';
 
 // sort_order 4 is a synthetic row (not from logbook_page_report) built by
 // app.js's applyFilter() for the filtered-results view's single total row.
@@ -190,7 +191,9 @@ export function createPageView({ tableBody, cardList, onEdit, onDeleteEntry }) {
           `${TOTALS_LABELS[row.sort_order]}: ${row.total_time ?? ''}`;
       } else {
         const { main, sub } = summaryFor(row, kind);
+        const airline = kind === 'flight' ? detectAirline(row.remarks) : undefined;
         summaryBtn.innerHTML = `
+          ${airline ? renderAirlineBadge(airline) : ''}
           <span class="summary-text"><span class="summary-main"></span><span class="summary-sub"></span></span>
           <span class="chevron" aria-hidden="true">▾</span>
         `;

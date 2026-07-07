@@ -654,6 +654,17 @@ tr.totals-row {
   transform: rotate(180deg);
 }
 
+/* Airline logo inferred from a flight's remarks (see airline-badge.js) -
+   absent entirely (not just hidden) when no airline is recognized, so no
+   layout gap appears where it would have been. */
+.airline-badge {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .card-details {
   padding: 0.5rem 0.75rem 0.75rem;
   border-top: 1px solid var(--paper-border);
