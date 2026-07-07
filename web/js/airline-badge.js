@@ -8,6 +8,11 @@
 const AIRLINES = [
   { name: 'Iberia', logoUrl: 'https://www.iberia.com//wcs/imagenes/iconos/favicon.ico', prefixes: ['IB', 'IBE'] },
   { name: 'Luxair', logoUrl: 'https://www.luxair.lu/themes/luxair/favicon.ico', prefixes: ['LG', 'LGL'] },
+  {
+    name: 'Finnair',
+    logoUrl: 'https://cdn.finnair.com/finnair-com-ux/lambda/prod/browser/assets/favicon/favicon-32x32.png',
+    prefixes: ['FIN'],
+  },
 ];
 
 // Returns the matching airline entry, or undefined if remarks is
