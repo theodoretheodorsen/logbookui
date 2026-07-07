@@ -1,4 +1,4 @@
-import { el } from '../dom.js';
+import { el, populateDatalist } from '../dom.js';
 import { logbookApi } from '../logbook-api.js';
 import { showError, clearError } from '../error-banner.js';
 import { isEditModeEnabled } from '../edit-mode.js';
@@ -40,6 +40,8 @@ export function createFlightDialog({ onSaved }) {
   restrictDigits(el('flight-on-block-time'), 4);
   restrictUppercase(el('flight-departure'), 4);
   restrictUppercase(el('flight-destination'), 4);
+  // No max length - PIC names vary, unlike a fixed-width ICAO code.
+  restrictUppercase(el('flight-pic-name'), Infinity);
 
   function populateAircraftSelect() {
     aircraftSelect.textContent = '';
@@ -59,6 +61,7 @@ export function createFlightDialog({ onSaved }) {
   function open(position) {
     clearError();
     populateAircraftSelect();
+    populateDatalist(el('flight-pic-name-list'), logbookApi.listPicNames());
     newAircraftFields.hidden = true;
     editingPosition = position ?? null;
     el('flight-dialog-title').textContent = editingPosition ? 'Edit Flight' : 'Add Flight';

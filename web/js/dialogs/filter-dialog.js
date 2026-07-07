@@ -1,4 +1,4 @@
-import { el } from '../dom.js';
+import { el, populateDatalist } from '../dom.js';
 import { logbookApi, AIRCRAFT_FAMILIES } from '../logbook-api.js';
 import { clearError } from '../error-banner.js';
 import { restrictUppercase } from '../input-restrict.js';
@@ -34,15 +34,6 @@ export function createFilterDialog({ onApply, onClear }) {
       option.value = value;
       option.textContent = label;
       select.appendChild(option);
-    }
-  }
-
-  function populateDatalist(datalist, values) {
-    datalist.textContent = '';
-    for (const value of values) {
-      const option = document.createElement('option');
-      option.value = value;
-      datalist.appendChild(option);
     }
   }
 
