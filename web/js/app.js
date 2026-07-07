@@ -81,6 +81,36 @@ function clearFilter() {
   goToPage(currentPage);
 }
 
+// Swipe-to-turn-page for the mobile card list (the desktop table stays
+// button/scroll-only, since a horizontal swipe there would fight its own
+// horizontal scroll for wide rows). #page-card-list is display:none above
+// the 700px breakpoint, so this is inert on desktop even though the
+// listeners are always attached. No filtered view (no "page" to turn to)
+// and no preventDefault - a swipe's small incidental vertical scroll is
+// harmless, and not fighting the browser's own scroll keeps this simple.
+const SWIPE_THRESHOLD_PX = 60;
+
+function setupSwipeNavigation(target) {
+  let startX = null;
+  let startY = null;
+
+  target.addEventListener('touchstart', (event) => {
+    startX = event.touches[0].clientX;
+    startY = event.touches[0].clientY;
+  });
+
+  target.addEventListener('touchend', (event) => {
+    if (startX == null || activeFilter) return;
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+    startX = null;
+    startY = null;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    goToPage(currentPage + (deltaX < 0 ? 1 : -1));
+  });
+}
+
 // After adding/editing/deleting, re-run the active filter if one is showing
 // instead of always falling back to normal page navigation.
 function refreshAfterSave(position) {
@@ -122,6 +152,8 @@ const simDialog = createSimulatorDialog({ onSaved: refreshAfterSave });
 const remarkDialog = createRemarkDialog({ onSaved: refreshAfterSave });
 const exportDialog = createExportDialog();
 const filterDialog = createFilterDialog({ onApply: applyFilter, onClear: clearFilter });
+
+setupSwipeNavigation(el('page-card-list'));
 
 githubTokenInput.value = getToken();
 fileInput.addEventListener('change', onFileChosen);
