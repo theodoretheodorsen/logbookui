@@ -65,13 +65,28 @@ async function fetchFile(path) {
 // `message`. Always fetches the current sha immediately before writing
 // (rather than caching one across the session), so this works whether the
 // file was just loaded from GitHub or is being created for the first time.
-async function putFile(path, bytes, message) {
+//
+// If `expectedSha` is given, the fetched current sha must match it or the
+// write is refused with a conflict error - this is what stops one device
+// from silently clobbering a save made from another device (e.g. phone and
+// laptop both editing the same logbook.db) since git has no way to merge a
+// binary sqlite file. Pass the returned sha into the next call so repeated
+// saves in the same session don't falsely conflict with themselves.
+async function putFile(path, bytes, message, { expectedSha } = {}) {
   const existing = await githubRequest(path);
   let sha;
   if (existing.ok) {
     sha = (await existing.json()).sha;
   } else if (existing.status !== 404) {
     throw new Error(`GitHub save failed while checking ${path} (${existing.status})`);
+  }
+
+  if (expectedSha != null && sha !== expectedSha) {
+    const error = new Error(
+      `${path} was changed on GitHub since it was loaded here. Reload the logbook before saving again, or you will overwrite those changes.`
+    );
+    error.conflict = true;
+    throw error;
   }
 
   const response = await githubRequest(path, {
@@ -83,6 +98,7 @@ async function putFile(path, bytes, message) {
     if (response.status === 401) throw new Error('GitHub token missing or invalid');
     throw new Error(`GitHub save failed for ${path} (${response.status})`);
   }
+  return (await response.json()).content.sha;
 }
 
 export { getToken, setToken, fetchFile, putFile, textToBytes };

@@ -22,6 +22,11 @@ const filterBanner = el('filter-banner');
 const filterCountEl = el('filter-count');
 
 let currentPage = 1;
+// The sha of logbook.db as last loaded from or saved to GitHub, used to
+// detect whether another device has saved a newer version in between (see
+// onSaveToGithub). Stays null when the db was opened from a local file
+// instead, since there's then no known remote version to compare against.
+let loadedDbSha = null;
 // Set while the filtered-results view (see applyFilter) is showing instead
 // of a physical page, so mutations know whether to re-run the filter or go
 // back to normal page navigation.
@@ -161,8 +166,9 @@ async function onLoadFromGithub() {
   clearError();
   setToken(githubTokenInput.value);
   try {
-    const { bytes } = await fetchFile('logbook.db');
+    const { bytes, sha } = await fetchFile('logbook.db');
     await loadDatabase(bytes.buffer);
+    loadedDbSha = sha;
     openPanel.hidden = true;
     app.hidden = false;
     goToPage(logbookApi.getLastPageNumber());
@@ -174,7 +180,7 @@ async function onLoadFromGithub() {
 async function onSaveToGithub() {
   clearError();
   try {
-    await putFile('logbook.db', exportDatabase(), 'Update logbook.db');
+    loadedDbSha = await putFile('logbook.db', exportDatabase(), 'Update logbook.db', { expectedSha: loadedDbSha });
     await putFile('logbook.csv', textToBytes(buildCsv({})), 'Update logbook.csv');
   } catch (err) {
     showError(`Could not save to GitHub: ${err.message}`);
