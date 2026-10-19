@@ -207,6 +207,7 @@ btnOpenGithub.addEventListener('click', () => {
 el('btn-open-file').addEventListener('click', () => fileInput.click());
 el('btn-load-github').addEventListener('click', onLoadFromGithub);
 el('btn-save-github').addEventListener('click', onSaveToGithub);
+el('btn-resolve-pending').addEventListener('click', onResolvePendingNight);
 el('btn-first').addEventListener('click', () => goToPage(1));
 el('btn-prev').addEventListener('click', () => goToPage(currentPage - 1));
 el('btn-next').addEventListener('click', () => goToPage(currentPage + 1));
@@ -370,5 +371,25 @@ async function onSaveToGithub() {
     showSuccess('Saved to GitHub.');
   } catch (err) {
     showError(`Could not save to GitHub: ${err.message}`);
+  }
+}
+
+// Retries night-time resolution for every flight still "pending" (saved
+// while offline or while airportsapi.com was unreachable) - the manual
+// counterpart to the automatic retry that already happens on any edit to a
+// pending flight (see lib/flights.js's updateFlight).
+async function onResolvePendingNight() {
+  clearError();
+  try {
+    const { attempted, resolved } = await logbookApi.resolvePendingNightMinutes();
+    if (activeFilter) applyFilter(activeFilter);
+    else goToPage(currentPage);
+    showSuccess(
+      attempted === 0
+        ? 'No pending night-time calculations.'
+        : `Resolved ${resolved} of ${attempted} pending night-time calculation(s).`
+    );
+  } catch (err) {
+    showError(`Could not resolve pending night times: ${err.message}`);
   }
 }

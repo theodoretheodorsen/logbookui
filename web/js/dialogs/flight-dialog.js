@@ -125,7 +125,7 @@ export function createFlightDialog({ onSaved }) {
     dialog.showModal();
   }
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearError();
 
@@ -161,20 +161,31 @@ export function createFlightDialog({ onSaved }) {
       data.aircraft_id = Number(aircraftSelect.value);
     }
 
+    // Saving now always resolves night_minutes, which may attempt a live
+    // network lookup (see lib/airports.js) - disable Save while that's in
+    // flight so a flaky connection can't lead to a double-submit.
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalLabel = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Saving…';
+
     try {
       if (editingPosition) {
-        logbookApi.updateFlight(editingPosition, data);
+        await logbookApi.updateFlight(editingPosition, data);
         dialog.close();
         onSaved(editingPosition);
       } else {
         const position = el('flight-position').value ? Number(el('flight-position').value) : null;
         if (position != null) data.position = position;
-        const landedAt = logbookApi.addFlight(data);
+        const landedAt = await logbookApi.addFlight(data);
         dialog.close();
         onSaved(landedAt);
       }
     } catch (err) {
       showError(err.message);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = originalLabel;
     }
   });
 

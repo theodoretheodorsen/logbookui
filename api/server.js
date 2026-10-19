@@ -9,7 +9,10 @@ import { deleteEntryAt } from '../lib/entries.js';
 import { isConstraintError } from '../lib/errors.js';
 
 const { getPage, getLastPageNumber } = createPagesApi({ getDb });
-const { addFlight, updateFlight, getFlight } = createFlightsApi({ getDb, withTransaction });
+const { addFlight, updateFlight, getFlight, resolvePendingNightMinutes } = createFlightsApi({
+  getDb,
+  withTransaction,
+});
 const { addSimulatorSession, updateSimulatorSession, getSimulatorSession } = createSimulatorApi({
   getDb,
   withTransaction,
@@ -21,11 +24,7 @@ app.use(express.json());
 
 function asyncHandler(fn) {
   return (req, res, next) => {
-    try {
-      fn(req, res);
-    } catch (err) {
-      next(err);
-    }
+    Promise.resolve(fn(req, res)).catch(next);
   };
 }
 
@@ -60,17 +59,24 @@ app.get(
 
 app.post(
   '/flights',
-  asyncHandler((req, res) => {
-    const position = addFlight(req.body);
+  asyncHandler(async (req, res) => {
+    const position = await addFlight(req.body);
     res.status(201).json({ position });
   })
 );
 
 app.put(
   '/flights/:position',
-  asyncHandler((req, res) => {
-    updateFlight(Number(req.params.position), req.body);
+  asyncHandler(async (req, res) => {
+    await updateFlight(Number(req.params.position), req.body);
     res.status(204).end();
+  })
+);
+
+app.post(
+  '/maintenance/resolve-pending-night',
+  asyncHandler(async (req, res) => {
+    res.json(await resolvePendingNightMinutes());
   })
 );
 

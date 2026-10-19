@@ -29,6 +29,7 @@ export const COLUMNS = [
   { key: 'dual_time', label: 'DUAL' },
   { key: 'day_landings', label: 'Day Ldg' },
   { key: 'night_landings', label: 'Night Ldg' },
+  { key: 'night_time', label: 'Night' },
   { key: 'fstd_type', label: 'Sim Type' },
   { key: 'simulator_time', label: 'Sim' },
   { key: 'remarks', label: 'Remarks' },
@@ -56,6 +57,7 @@ const TIME_TAG_COLUMNS = [
   { key: 'pic_time', label: 'PIC' },
   { key: 'cop_time', label: 'COP' },
   { key: 'dual_time', label: 'DUAL' },
+  { key: 'night_time', label: 'NIGHT' },
 ];
 
 const FLIGHT_FOLDED_KEYS = ['registration', 'type', 'total_time', ...TIME_TAG_COLUMNS.map((c) => c.key)];

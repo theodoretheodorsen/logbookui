@@ -19,7 +19,10 @@ import {
   AIRCRAFT_FAMILIES,
 } from '../lib/export.js';
 
-const { addFlight, updateFlight, getFlight, getLastFlight } = createFlightsApi({ getDb, withTransaction });
+const { addFlight, updateFlight, getFlight, getLastFlight, resolvePendingNightMinutes } = createFlightsApi({
+  getDb,
+  withTransaction,
+});
 const { addSimulatorSession, updateSimulatorSession, getSimulatorSession } = createSimulatorApi({
   getDb,
   withTransaction,
@@ -70,6 +73,7 @@ export const logbookApi = {
   updateFlight,
   getFlight,
   getLastFlight,
+  resolvePendingNightMinutes,
   addSimulatorSession,
   updateSimulatorSession,
   getSimulatorSession,
