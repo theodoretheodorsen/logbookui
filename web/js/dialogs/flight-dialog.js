@@ -73,10 +73,9 @@ export function createFlightDialog({ onSaved }) {
       const flight = logbookApi.getFlight(editingPosition);
       el('flight-position').value = '';
       // Only off_block's date is shown/edited (the logbook only ever
-      // displays one Date per entry - see logbook_page_report) - on_block
-      // is assumed to be the same calendar day. Re-saving a flight that
-      // genuinely crossed midnight UTC would normalize its on_block date to
-      // match; edit such a flight via the API/sqlite3 directly instead.
+      // displays one Date per entry - see logbook_page_report) - on_block's
+      // original date is discarded and recomputed on save (see submit
+      // handler below) from whether its time precedes off-block's.
       const off = splitDbTimestamp(flight.off_block);
       const on = splitDbTimestamp(flight.on_block);
       el('flight-date').value = off.date;
@@ -131,9 +130,16 @@ export function createFlightDialog({ onSaved }) {
     clearError();
 
     const date = el('flight-date').value;
+    const offBlockTime = el('flight-off-block-time').value;
+    const onBlockTime = el('flight-on-block-time').value;
+    // A flight landing after midnight UTC has an on-block time that's
+    // numerically smaller than off-block's - e.g. off 2300, on 0200. That's
+    // the only signal available (there's no separate "crossed midnight"
+    // checkbox), so it's treated as having landed the following day.
+    const onBlockDate = onBlockTime < offBlockTime ? addDaysUtc(date, 1) : date;
     const data = {
-      off_block: toDbTimestamp(date, el('flight-off-block-time').value),
-      on_block: toDbTimestamp(date, el('flight-on-block-time').value),
+      off_block: toDbTimestamp(date, offBlockTime),
+      on_block: toDbTimestamp(onBlockDate, onBlockTime),
       departure: el('flight-departure').value,
       destination: el('flight-destination').value,
       pic_name: el('flight-pic-name').value || null,
