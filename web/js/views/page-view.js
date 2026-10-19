@@ -57,10 +57,15 @@ const TIME_TAG_COLUMNS = [
   { key: 'pic_time', label: 'PIC' },
   { key: 'cop_time', label: 'COP' },
   { key: 'dual_time', label: 'DUAL' },
-  { key: 'night_time', label: 'NIGHT' },
 ];
 
-const FLIGHT_FOLDED_KEYS = ['registration', 'type', 'total_time', ...TIME_TAG_COLUMNS.map((c) => c.key)];
+// night_time is handled separately from TIME_TAG_COLUMNS (see
+// addFlightSummaryFields) rather than folded into BLOCK: unlike the
+// role/rules/engine tags above, which are whole-flight classifications,
+// night time is a continuously-varying quantity that's usually partial and
+// often legitimately zero, so it gets its own line instead - still listed
+// here so the generic per-column loop below doesn't also render it.
+const FLIGHT_FOLDED_KEYS = ['registration', 'type', 'total_time', 'night_time', ...TIME_TAG_COLUMNS.map((c) => c.key)];
 
 function rowKind(row) {
   if (row.fstd_type != null) return 'simulator';
@@ -110,6 +115,13 @@ function addFlightSummaryFields(container, row) {
 
   addCardField(container, 'BLOCK', tags.length ? `${row.total_time} (${tags.join(', ')})` : row.total_time);
   for (const { label, value } of partial) addCardField(container, label, value);
+
+  // Always its own line when there's any night time at all (or it's still
+  // "pending"), never folded into BLOCK; hidden entirely when genuinely
+  // zero rather than cluttering every all-daylight flight with "Night: 0:00".
+  if (row.night_time && row.night_time !== '0:00') {
+    addCardField(container, 'Night', row.night_time);
+  }
 }
 
 // Compact "card" summary for narrow/mobile screens: date + off-block/on-block
