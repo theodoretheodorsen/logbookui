@@ -6,7 +6,8 @@ const TOTALS_LABELS = { 1: 'Page total', 2: 'Previous page total', 3: 'Running t
 const PRINT_STYLES = `
   @page { size: landscape; margin: 1cm; }
   body { font-family: system-ui, sans-serif; font-size: 9pt; color: #000; }
-  h1 { font-size: 12pt; }
+  h1 { font-size: 12pt; margin: 0 0 0.3em 0; }
+  h2 { font-size: 10pt; font-weight: normal; color: #444; margin: 0 0 0.6em 0; }
   table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
   th, td { border: 1px solid #999; padding: 2px 5px; text-align: left; white-space: nowrap; }
   thead { background: #eee; }
@@ -137,6 +138,16 @@ function openPrintWindow() {
   });
 }
 
+// Prints the "Logbook <owner name> <licence number>" title as actual page
+// content (not just document.title/the browser's optional print header),
+// since the latter is unreliable across platforms - notably, mobile export
+// flows don't reliably show it at all, whereas this always prints.
+function appendTitleBanner(doc) {
+  const h1 = doc.createElement('h1');
+  h1.textContent = buildDocTitle();
+  doc.body.appendChild(h1);
+}
+
 function buildHeaderRow(doc) {
   const tr = doc.createElement('tr');
   for (const column of COLUMNS) {
@@ -185,9 +196,10 @@ export async function printEntryList(range) {
 
   const { printWindow, doc } = await openPrintWindow();
 
-  const h1 = doc.createElement('h1');
-  h1.textContent = describeCriteria(range);
-  doc.body.appendChild(h1);
+  appendTitleBanner(doc);
+  const h2 = doc.createElement('h2');
+  h2.textContent = describeCriteria(range);
+  doc.body.appendChild(h2);
 
   const table = doc.createElement('table');
   table.appendChild(buildHeaderRow(doc));
@@ -254,6 +266,8 @@ export async function printLogbookPages(range) {
   const rows = logbookApi.getPagesForExport(range);
 
   const { printWindow, doc } = await openPrintWindow();
+
+  appendTitleBanner(doc);
 
   const pages = new Map();
   for (const row of rows) {
