@@ -100,7 +100,7 @@ export function createExportDialog() {
     dialog.showModal();
   }
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearError();
 
@@ -110,13 +110,13 @@ export function createExportDialog() {
     try {
       if (filterCriteria) {
         if (format === 'csv') exportCsv(filterCriteria);
-        else printEntryList(filterCriteria);
+        else await printEntryList(filterCriteria);
       } else if (format === 'csv') {
         exportCsv(dateRange());
       } else if (pdfMode === 'list') {
-        printEntryList(dateRange());
+        await printEntryList(dateRange());
       } else {
-        printLogbookPages(pageRange());
+        await printLogbookPages(pageRange());
       }
       dialog.close();
     } catch (err) {
