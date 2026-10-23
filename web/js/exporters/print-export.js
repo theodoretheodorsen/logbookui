@@ -16,6 +16,18 @@ const PRINT_STYLES = `
      can be long, so it wraps instead of silently overflowing/getting cut
      off at the page edge. */
   th:last-child, td:last-child { white-space: normal; overflow-wrap: break-word; max-width: 12em; }
+  /* printEntryList only - the owner/licence title repeated via the <thead>
+     row trick (see buildHeaderRow's comment), so it reads like a title
+     rather than a table cell. */
+  th.print-title-row {
+    font-size: 11pt;
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+    background: #fff;
+    border-left: none;
+    border-right: none;
+  }
 
   /* "Logbook pages" mode only (printLogbookPages): three physical logbook
      pages per printed sheet, stacked vertically at full page width (not a
@@ -51,6 +63,11 @@ const PRINT_STYLES = `
   .sheet .page-block { break-inside: avoid; margin-bottom: 1.5mm; }
   .sheet .page-block:last-child { margin-bottom: 0; }
   .sheet h1 { font-size: 7pt; margin: 0 0 0.4mm 0; }
+  /* One of these per sheet (= one per printed page) - see
+     appendTitleBanner's comment - slightly larger/bolder than the "Page N"
+     headings above so it still reads as the page's title, not another one
+     of them. */
+  .sheet h1.sheet-title { font-size: 7.5pt; font-weight: bold; margin: 0 0 0.6mm 0; }
   .sheet table { table-layout: fixed; margin-bottom: 0; }
   .sheet th, .sheet td {
     font-size: 6pt;
@@ -141,21 +158,43 @@ function openPrintWindow() {
 // Prints the "Logbook <owner name> <licence number>" title as actual page
 // content (not just document.title/the browser's optional print header),
 // since the latter is unreliable across platforms - notably, mobile export
-// flows don't reliably show it at all, whereas this always prints.
-function appendTitleBanner(doc) {
+// flows don't reliably show it at all, whereas this always prints. Appended
+// to `container` (default: the whole document) so callers that need it
+// repeated once per printed page (see printLogbookPages) can append one
+// per page-sized container instead of once for the whole document.
+function appendTitleBanner(doc, container = doc.body, className) {
   const h1 = doc.createElement('h1');
+  if (className) h1.className = className;
   h1.textContent = buildDocTitle();
-  doc.body.appendChild(h1);
+  container.appendChild(h1);
+  return h1;
 }
 
-function buildHeaderRow(doc) {
+// `titleRow` (printEntryList only) adds the owner/licence title as an extra
+// row inside the <thead>, spanning every column - unlike the single banner
+// at the very top of the document, a <thead> natively repeats at the top
+// of every printed page a table's <tbody> spans, which is how this list
+// (a single long table, not divided into page-sized containers the way
+// printLogbookPages is) gets the title on every page too.
+function buildHeaderRow(doc, { titleRow } = {}) {
+  const thead = doc.createElement('thead');
+
+  if (titleRow) {
+    const bannerRow = doc.createElement('tr');
+    const th = doc.createElement('th');
+    th.colSpan = COLUMNS.length;
+    th.className = 'print-title-row';
+    th.textContent = titleRow;
+    bannerRow.appendChild(th);
+    thead.appendChild(bannerRow);
+  }
+
   const tr = doc.createElement('tr');
   for (const column of COLUMNS) {
     const th = doc.createElement('th');
     th.textContent = column.label;
     tr.appendChild(th);
   }
-  const thead = doc.createElement('thead');
   thead.appendChild(tr);
   return thead;
 }
@@ -196,13 +235,13 @@ export async function printEntryList(range) {
 
   const { printWindow, doc } = await openPrintWindow();
 
-  appendTitleBanner(doc);
+  const docTitle = appendTitleBanner(doc).textContent;
   const h2 = doc.createElement('h2');
   h2.textContent = describeCriteria(range);
   doc.body.appendChild(h2);
 
   const table = doc.createElement('table');
-  table.appendChild(buildHeaderRow(doc));
+  table.appendChild(buildHeaderRow(doc, { titleRow: docTitle }));
 
   const tbody = doc.createElement('tbody');
   for (const row of entries) {
@@ -267,8 +306,6 @@ export async function printLogbookPages(range) {
 
   const { printWindow, doc } = await openPrintWindow();
 
-  appendTitleBanner(doc);
-
   const pages = new Map();
   for (const row of rows) {
     if (!pages.has(row.page)) pages.set(row.page, []);
@@ -279,6 +316,9 @@ export async function printLogbookPages(range) {
   for (let i = 0; i < pageEntries.length; i += PAGES_PER_SHEET) {
     const sheet = doc.createElement('div');
     sheet.className = 'sheet';
+    // One banner per sheet (= one printed page), not once for the whole
+    // document - see appendTitleBanner's comment.
+    appendTitleBanner(doc, sheet, 'sheet-title');
     for (const [page, pageRows] of pageEntries.slice(i, i + PAGES_PER_SHEET)) {
       sheet.appendChild(buildPageBlock(doc, page, pageRows));
     }
