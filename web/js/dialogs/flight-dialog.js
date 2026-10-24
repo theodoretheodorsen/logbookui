@@ -21,6 +21,19 @@ function splitDbTimestamp(dbTimestamp) {
   return { date, time: time ? time.slice(0, 5).replace(':', '') : '' };
 }
 
+// Outbound/return flight pairs are usually consecutively numbered (e.g.
+// "IB811" out, "IB812" back) - detects a flight number at the start of
+// `remarks` (letters immediately followed by digits, e.g. "IB811 PICUS")
+// and returns it incremented by one, preserving the original digit width
+// (e.g. "IB0796" -> "IB0797"). Returns null if no flight number is found.
+function nextFlightNumber(remarks) {
+  const match = remarks?.match(/^([A-Z]+)(\d+)/);
+  if (!match) return null;
+  const [, carrier, digits] = match;
+  const next = String(Number(digits) + 1).padStart(digits.length, '0');
+  return `${carrier}${next}`;
+}
+
 // `onSaved(position)` is called after a successful add or edit, with the
 // position the flight ended up at, so app.js can navigate to that page.
 export function createFlightDialog({ onSaved }) {
@@ -102,6 +115,8 @@ export function createFlightDialog({ onSaved }) {
         if (endedAwayFromHome) {
           el('flight-departure').value = lastFlight.destination ?? '';
           el('flight-destination').value = HOME_BASE;
+          const nextFlightNo = nextFlightNumber(lastFlight.remarks);
+          if (nextFlightNo) el('flight-remarks').value = nextFlightNo;
         } else {
           el('flight-departure').value = HOME_BASE;
           el('flight-destination').value = '';
