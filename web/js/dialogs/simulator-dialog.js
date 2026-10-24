@@ -2,7 +2,7 @@ import { el } from '../dom.js';
 import { logbookApi } from '../logbook-api.js';
 import { showError, clearError } from '../error-banner.js';
 import { isEditModeEnabled } from '../edit-mode.js';
-import { restrictDigits } from '../input-restrict.js';
+import { restrictDigits, restrictUppercase } from '../input-restrict.js';
 import { todayUtc } from '../date-utils.js';
 
 // The db stores duration_minutes as a plain integer - HHMM is just how the
@@ -25,6 +25,9 @@ export function createSimulatorDialog({ onSaved }) {
   el('sim-cancel').addEventListener('click', () => dialog.close());
 
   restrictDigits(el('sim-duration'), 4);
+  // No max length - FSTD type and remarks vary, unlike a fixed-width field.
+  restrictUppercase(el('sim-fstd-type'), Infinity);
+  restrictUppercase(el('sim-remarks'), Infinity);
 
   let editingPosition = null;
 
